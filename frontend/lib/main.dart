@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart' hide FirebaseService;
 import 'package:provider/provider.dart';
 import 'services/firebase_service.dart';
 import 'views/dashboard_view.dart';
@@ -16,7 +16,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    print("Firebase initialization error: \$e");
+    debugPrint("Firebase initialization error: $e");
     // Fallback if options not found (user must configure)
     await Firebase.initializeApp();
   }
@@ -37,11 +37,12 @@ class JobScraperApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Job Scraper Control Center',
+      title: 'ScrappyJob',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF002060)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
+      debugShowCheckedModeBanner: false,
       home: const AuthWrapper(),
     );
   }

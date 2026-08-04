@@ -1,38 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ScrapingConfig {
+class JobConfig {
+  String id;
   String userId;
   List<String> jobTitles;
   List<String> locations;
   List<String> targetAts;
-  int hoursSincePosted;
-  String cronSchedule;
+  String timeframe;
+  String scrapeFrequency;
   String targetEmail;
   bool isActive;
+  DateTime? createdAt;
   DateTime? updatedAt;
 
-  ScrapingConfig({
+  JobConfig({
+    required this.id,
     required this.userId,
     this.jobTitles = const ["Product Manager", "AI Product Manager", "Senior Product Manager"],
     this.locations = const ["San Francisco Bay Area", "California, USA"],
     this.targetAts = const ["Greenhouse", "Ashby", "Workday", "iCIMS", "Lever", "BambooHR", "Workable", "LinkedIn", "Indeed"],
-    this.hoursSincePosted = 24,
-    this.cronSchedule = "0 7 * * *",
+    this.timeframe = "Past 24 Hours",
+    this.scrapeFrequency = "Every 4 Hours",
     this.targetEmail = "",
     this.isActive = true,
+    this.createdAt,
     this.updatedAt,
   });
 
-  factory ScrapingConfig.fromMap(Map<String, dynamic> data, String documentId) {
-    return ScrapingConfig(
-      userId: data['user_id'] ?? documentId,
+  factory JobConfig.fromMap(Map<String, dynamic> data, String documentId) {
+    return JobConfig(
+      id: documentId,
+      userId: data['user_id'] ?? '',
       jobTitles: List<String>.from(data['job_titles'] ?? []),
       locations: List<String>.from(data['locations'] ?? []),
       targetAts: List<String>.from(data['target_ats'] ?? []),
-      hoursSincePosted: data['hours_since_posted'] ?? 24,
-      cronSchedule: data['cron_schedule'] ?? "0 7 * * *",
+      timeframe: data['timeframe'] ?? "Past 24 Hours",
+      scrapeFrequency: data['scrape_frequency'] ?? "Every 4 Hours",
       targetEmail: data['target_email'] ?? "",
       isActive: data['is_active'] ?? true,
+      createdAt: data['created_at'] != null ? (data['created_at'] as Timestamp).toDate() : null,
       updatedAt: data['updated_at'] != null ? (data['updated_at'] as Timestamp).toDate() : null,
     );
   }
@@ -43,10 +49,11 @@ class ScrapingConfig {
       'job_titles': jobTitles,
       'locations': locations,
       'target_ats': targetAts,
-      'hours_since_posted': hoursSincePosted,
-      'cron_schedule': cronSchedule,
+      'timeframe': timeframe,
+      'scrape_frequency': scrapeFrequency,
       'target_email': targetEmail,
       'is_active': isActive,
+      'created_at': createdAt != null ? Timestamp.fromDate(createdAt!) : FieldValue.serverTimestamp(),
       'updated_at': FieldValue.serverTimestamp(),
     };
   }
@@ -65,6 +72,7 @@ class JobRun {
   bool emailSent;
   String status;
   int executionTimeMs;
+  List<Map<String, dynamic>> logs;
   DateTime? createdAt;
 
   JobRun({
@@ -80,6 +88,7 @@ class JobRun {
     required this.emailSent,
     required this.status,
     required this.executionTimeMs,
+    this.logs = const [],
     this.createdAt,
   });
 
@@ -97,7 +106,43 @@ class JobRun {
       emailSent: data['email_sent'] ?? false,
       status: data['status'] ?? '',
       executionTimeMs: data['execution_time_ms'] ?? 0,
+      logs: data['logs'] != null ? List<Map<String, dynamic>>.from(data['logs']) : [],
       createdAt: data['created_at'] != null ? (data['created_at'] as Timestamp).toDate() : null,
+    );
+  }
+}
+
+class RunProgress {
+  String id;
+  String status;
+  String currentAts;
+  int jobsFoundSoFar;
+  int atsCompleted;
+  int totalAts;
+  String command;
+  DateTime? updatedAt;
+
+  RunProgress({
+    required this.id,
+    required this.status,
+    required this.currentAts,
+    required this.jobsFoundSoFar,
+    required this.atsCompleted,
+    required this.totalAts,
+    required this.command,
+    this.updatedAt,
+  });
+
+  factory RunProgress.fromMap(Map<String, dynamic> data, String documentId) {
+    return RunProgress(
+      id: documentId,
+      status: data['status'] ?? 'UNKNOWN',
+      currentAts: data['current_ats'] ?? '',
+      jobsFoundSoFar: data['jobs_found_so_far'] ?? 0,
+      atsCompleted: data['ats_completed'] ?? 0,
+      totalAts: data['total_ats'] ?? 0,
+      command: data['command'] ?? '',
+      updatedAt: data['updated_at'] != null ? (data['updated_at'] as Timestamp).toDate() : null,
     );
   }
 }

@@ -3,9 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // User can only read/write their own config
-    match /scraping_config/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    match /jobs/{jobId} {
+      // User can read/write their own jobs.
+      // On create, ensure the user_id being written matches the auth.uid
+      // On read/update/delete, ensure the existing document's user_id matches the auth.uid
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // User can only read their own job runs (backend creates them)
@@ -13,6 +16,13 @@ service cloud.firestore {
       allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
       // Allow backend to create using Firebase Admin SDK (which bypasses these rules)
       allow write: if false; 
+    }
+    
+    // User can read and send STOP commands to run_progress
+    match /run_progress/{jobId} {
+      // Allow read/write for any authenticated user for now, 
+      // or check if they own the job if we add user_id to run_progress
+      allow read, write: if request.auth != null;
     }
     
     // Deny all other access

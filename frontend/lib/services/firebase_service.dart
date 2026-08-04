@@ -1,19 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/scraping_config.dart';
+import '../models/job_config.dart';
 
 class FirebaseService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   User? _user;
-  ScrapingConfig? _currentConfig;
+  List<JobConfig> _jobs = [];
   List<JobRun> _jobRuns = [];
   bool _isLoading = false;
 
   User? get user => _user;
-  ScrapingConfig? get currentConfig => _currentConfig;
+  List<JobConfig> get jobs => _jobs;
   List<JobRun> get jobRuns => _jobRuns;
   bool get isLoading => _isLoading;
 
@@ -21,10 +21,10 @@ class FirebaseService extends ChangeNotifier {
     _auth.authStateChanges().listen((user) {
       _user = user;
       if (user != null) {
-        _fetchConfig();
+        _fetchJobs();
         _fetchJobRuns();
       } else {
-        _currentConfig = null;
+        _jobs = [];
         _jobRuns = [];
         notifyListeners();
       }
@@ -35,24 +35,24 @@ class FirebaseService extends ChangeNotifier {
     try {
       await _auth.signInAnonymously();
     } catch (e) {
-      print("Error signing in anonymously: \$e");
+      debugPrint("Error signing in anonymously: $e");
     }
   }
 
-  Future<void> _fetchConfig() async {
+  Future<void> _fetchJobs() async {
     if (_user == null) return;
     _setLoading(true);
     try {
-      DocumentSnapshot doc = await _firestore.collection('scraping_config').doc(_user!.uid).get();
-      if (doc.exists) {
-        _currentConfig = ScrapingConfig.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-      } else {
-        // Create default config
-        _currentConfig = ScrapingConfig(userId: _user!.uid);
-        await saveConfig(_currentConfig!);
-      }
+      _firestore
+          .collection('jobs')
+          .where('user_id', isEqualTo: _user!.uid)
+          .snapshots()
+          .listen((snapshot) {
+        _jobs = snapshot.docs.map((doc) => JobConfig.fromMap(doc.data(), doc.id)).toList();
+        notifyListeners();
+      });
     } catch (e) {
-      print("Error fetching config: \$e");
+      debugPrint("Error fetching jobs: $e");
     }
     _setLoading(false);
   }
@@ -70,21 +70,71 @@ class FirebaseService extends ChangeNotifier {
         notifyListeners();
       });
     } catch (e) {
-      print("Error fetching job runs: \$e");
+      debugPrint("Error fetching job runs: $e");
     }
   }
 
-  Future<void> saveConfig(ScrapingConfig config) async {
+  Future<void> saveJob(JobConfig job) async {
     if (_user == null) return;
     _setLoading(true);
     try {
-      await _firestore.collection('scraping_config').doc(_user!.uid).set(config.toMap());
-      _currentConfig = config;
-      notifyListeners();
+      if (job.id.isEmpty) {
+        // Add new job
+        await _firestore.collection('jobs').add(job.toMap());
+      } else {
+        // Update existing job
+        await _firestore.collection('jobs').doc(job.id).update(job.toMap());
+      }
     } catch (e) {
-      print("Error saving config: \$e");
+      debugPrint("Error saving job: $e");
     }
     _setLoading(false);
+  }
+
+  Future<void> deleteJob(String jobId) async {
+    if (_user == null) return;
+    _setLoading(true);
+    try {
+      await _firestore.collection('jobs').doc(jobId).delete();
+    } catch (e) {
+      debugPrint("Error deleting job: $e");
+    }
+    _setLoading(false);
+  }
+
+  RunProgress? _activeProgress;
+  RunProgress? get activeProgress => _activeProgress;
+  String? _activeJobId;
+  
+  void setActiveJobId(String? jobId) {
+    _activeJobId = jobId;
+    if (jobId != null) {
+      _listenToProgress(jobId);
+    } else {
+      _activeProgress = null;
+      notifyListeners();
+    }
+  }
+
+  void _listenToProgress(String jobId) {
+    _firestore.collection('run_progress').doc(jobId).snapshots().listen((doc) {
+      if (doc.exists) {
+        _activeProgress = RunProgress.fromMap(doc.data()!, doc.id);
+        notifyListeners();
+      } else {
+        _activeProgress = null;
+        notifyListeners();
+      }
+    });
+  }
+
+  Future<void> stopAgentRun(String jobId) async {
+    if (_user == null) return;
+    try {
+      await _firestore.collection('run_progress').doc(jobId).update({'command': 'STOP'});
+    } catch (e) {
+      debugPrint("Error stopping run: $e");
+    }
   }
 
   void _setLoading(bool value) {

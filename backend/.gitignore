@@ -1,0 +1,20 @@
+# Environment variables
+.env
+
+# Credentials
+*credentials.json
+firebase-credentials.json
+google-drive-credentials.json
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Generated reports
+*.xlsx
