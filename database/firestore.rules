@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User can only read/write their own config
+    match /scraping_config/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // User can only read their own job runs (backend creates them)
+    match /job_runs/{runId} {
+      allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
+      // Allow backend to create using Firebase Admin SDK (which bypasses these rules)
+      allow write: if false; 
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

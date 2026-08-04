@@ -1,0 +1,6 @@
+firecrawl-py
+firebase-admin
+pandas
+openpyxl
+google-api-python-client
+python-dotenv
