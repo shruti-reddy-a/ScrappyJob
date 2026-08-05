@@ -203,6 +203,16 @@ class FirebaseService extends ChangeNotifier {
       "Workable": "apply.workable.com",
       "LinkedIn": "linkedin.com/jobs",
       "Indeed": "indeed.com",
+      "SmartRecruiters": "jobs.smartrecruiters.com",
+      "Taleo": "taleo.net",
+      "Jobvite": "jobs.jobvite.com",
+      "ADP": "workforcenow.adp.com",
+      "Paycom": "paycomonline.net",
+      "JazzHR": "applytojob.com",
+      "Breezy HR": "breezy.hr",
+      "Paylocity": "recruiting.paylocity.com",
+      "UKG": "ultipro.com",
+      "ClearCompany": "clearcompany.com",
     };
     for (var entry in defaults.entries) {
       final plat = AtsPlatform(id: '', userId: _user!.uid, name: entry.key, domain: entry.value, isEnabled: true);
