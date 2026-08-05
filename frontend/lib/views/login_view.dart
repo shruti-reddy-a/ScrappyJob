@@ -89,15 +89,20 @@ class _LoginViewState extends State<LoginView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.work, size: 64, color: AppColors.primary),
-                const SizedBox(height: 16),
-                Text(
-                  _isLogin ? 'Welcome Back' : 'Create Account',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.work, size: 36, color: AppColors.primary),
+                    SizedBox(width: 12),
+                    Text(
+                      'ScrappyJob',
+                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 32),
                 Text(
-                  _isLogin ? 'Log in to ScrappyJob' : 'Sign up for ScrappyJob',
+                  _isLogin ? 'Log in to continue' : 'Sign up to continue',
                   style: const TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant),
                 ),
                 const SizedBox(height: 32),
@@ -132,9 +137,9 @@ class _LoginViewState extends State<LoginView> {
                 SizedBox(
                   width: double.infinity,
                   height: 48,
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
+                    style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.onPrimary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

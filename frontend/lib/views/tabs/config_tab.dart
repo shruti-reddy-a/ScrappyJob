@@ -90,11 +90,11 @@ class ConfigTab extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 24.0, top: 8.0),
             child: SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
+              child: FilledButton.icon(
                 onPressed: () => _showConfigModal(context),
                 icon: const Icon(Icons.add_task, color: AppColors.onSecondary),
                 label: const Text('Schedule New Job', style: TextStyle(color: AppColors.onSecondary, fontSize: 16, fontWeight: FontWeight.w500)),
-                style: ElevatedButton.styleFrom(
+                style: FilledButton.styleFrom(
                   backgroundColor: AppColors.secondary,
                   foregroundColor: AppColors.onSecondary,
                   padding: const EdgeInsets.symmetric(vertical: 20),

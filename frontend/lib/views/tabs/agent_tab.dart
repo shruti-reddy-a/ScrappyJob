@@ -153,11 +153,11 @@ class _AgentTabState extends State<AgentTab> {
                         if (progress.status == 'RUNNING' && progress.command != 'STOP')
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton.icon(
+                            child: FilledButton.icon(
                               onPressed: () => service.stopAgentRun(progress.id),
                               icon: const Icon(Icons.stop_circle, color: Colors.white),
                               label: const Text('Stop Agent Run', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
+                              style: FilledButton.styleFrom(
                                 backgroundColor: Colors.red.shade600,
                                 padding: const EdgeInsets.symmetric(vertical: 20),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
@@ -169,11 +169,11 @@ class _AgentTabState extends State<AgentTab> {
                         else if (progress.status == 'COMPLETED' && progress.jobRunId != null && widget.onViewLog != null)
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton.icon(
+                            child: FilledButton.icon(
                               onPressed: () => widget.onViewLog!(progress.jobRunId!),
                               icon: const Icon(Icons.receipt_long, color: Colors.white),
                               label: const Text('View Log', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
+                              style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 padding: const EdgeInsets.symmetric(vertical: 20),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),

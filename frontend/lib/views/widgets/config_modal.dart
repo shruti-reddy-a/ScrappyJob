@@ -210,9 +210,9 @@ class _ConfigModalState extends State<ConfigModal> {
                   ],
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: _save,
-                      style: ElevatedButton.styleFrom(
+                      style: FilledButton.styleFrom(
                         backgroundColor: AppColors.secondary,
                         foregroundColor: AppColors.onSecondary,
                         padding: const EdgeInsets.symmetric(vertical: 20),

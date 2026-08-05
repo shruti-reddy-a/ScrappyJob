@@ -64,7 +64,6 @@ class FirebaseService extends ChangeNotifier {
         await _auth.signInWithPopup(authProvider);
       } else {
         final googleUser = await GoogleSignIn.instance.authenticate();
-        if (googleUser == null) return "Sign in cancelled";
 
         final GoogleSignInAuthentication googleAuth = googleUser.authentication;
         final AuthCredential credential = GoogleAuthProvider.credential(
