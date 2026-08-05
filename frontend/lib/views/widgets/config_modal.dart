@@ -23,7 +23,6 @@ class _ConfigModalState extends State<ConfigModal> {
   String _selectedTimeframe = 'Past 24 Hours';
   List<String> _selectedAts = [];
 
-  final List<String> _availableAts = ["Greenhouse", "Ashby", "Workday", "iCIMS", "Lever", "BambooHR", "Workable", "LinkedIn", "Indeed"];
   final List<String> _frequencyOptions = ['Now', 'Every 4 Hours', 'Every 6 Hours', 'Every 12 Hours', 'Daily'];
   final List<String> _timeframeOptions = ['Past 12 Hours', 'Past 24 Hours', 'Past 48 Hours', 'Past 7 Days'];
 
@@ -83,6 +82,16 @@ class _ConfigModalState extends State<ConfigModal> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final service = context.watch<FirebaseService>();
+    final availableAts = service.activeAtsPlatforms.map((p) => p.name).toList();
+    
+    // Add any selected ATS platforms that might be disabled or deleted so they still show up
+    for (var ats in _selectedAts) {
+      if (!availableAts.contains(ats)) {
+        availableAts.add(ats);
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset, left: 24, right: 24, top: 32),
       child: Form(
@@ -173,11 +182,11 @@ class _ConfigModalState extends State<ConfigModal> {
               const SizedBox(height: 24),
               const Text('Target ATS Platforms', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSurface)),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 8.0,
-                children: _availableAts.map((ats) {
-                  final isSelected = _selectedAts.contains(ats);
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: availableAts.map((ats) {
+                    final isSelected = _selectedAts.contains(ats);
                   return FilterChip(
                     label: Text(ats),
                     selected: isSelected,

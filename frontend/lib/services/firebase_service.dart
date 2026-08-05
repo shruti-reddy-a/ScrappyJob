@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/job_config.dart';
+import '../models/ats_platform.dart';
 
 class FirebaseService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -12,11 +13,14 @@ class FirebaseService extends ChangeNotifier {
   User? _user;
   List<JobConfig> _jobs = [];
   List<JobRun> _jobRuns = [];
+  List<AtsPlatform> _atsPlatforms = [];
   bool _isLoading = false;
 
   User? get user => _user;
   List<JobConfig> get jobs => _jobs;
   List<JobRun> get jobRuns => _jobRuns;
+  List<AtsPlatform> get atsPlatforms => _atsPlatforms;
+  List<AtsPlatform> get activeAtsPlatforms => _atsPlatforms.where((p) => p.isEnabled).toList();
   bool get isLoading => _isLoading;
 
   FirebaseService() {
@@ -28,10 +32,12 @@ class FirebaseService extends ChangeNotifier {
       if (user != null) {
         _fetchJobs();
         _fetchJobRuns();
+        _fetchAtsPlatforms();
         _listenToGlobalProgress();
       } else {
         _jobs = [];
         _jobRuns = [];
+        _atsPlatforms = [];
         _activeProgress = null;
         _globalProgressSub?.cancel();
         notifyListeners();
@@ -164,6 +170,46 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
+  Future<void> _fetchAtsPlatforms() async {
+    if (_user == null) return;
+    try {
+      _firestore
+          .collection('ats_platforms')
+          .where('user_id', isEqualTo: _user!.uid)
+          .snapshots()
+          .listen((snapshot) async {
+        if (snapshot.docs.isEmpty) {
+          // Seed the database with defaults if empty
+          await _seedDefaultAtsPlatforms();
+        } else {
+          _atsPlatforms = snapshot.docs.map((doc) => AtsPlatform.fromMap(doc.data(), doc.id)).toList();
+          _atsPlatforms.sort((a, b) => a.name.compareTo(b.name));
+          notifyListeners();
+        }
+      });
+    } catch (e) {
+      debugPrint("Error fetching ATS platforms: $e");
+    }
+  }
+
+  Future<void> _seedDefaultAtsPlatforms() async {
+    final defaults = {
+      "Greenhouse": "boards.greenhouse.io",
+      "Ashby": "jobs.ashbyhq.com",
+      "Workday": "myworkdayjobs.com",
+      "iCIMS": "icims.com/jobs",
+      "Lever": "jobs.lever.co",
+      "BambooHR": "bamboohr.com/careers",
+      "Workable": "apply.workable.com",
+      "LinkedIn": "linkedin.com/jobs",
+      "Indeed": "indeed.com",
+    };
+    for (var entry in defaults.entries) {
+      final plat = AtsPlatform(id: '', userId: _user!.uid, name: entry.key, domain: entry.value, isEnabled: true);
+      await _firestore.collection('ats_platforms').add(plat.toMap());
+    }
+  }
+
   Future<void> saveJob(JobConfig job) async {
     if (_user == null) return;
     _setLoading(true);
@@ -190,6 +236,41 @@ class FirebaseService extends ChangeNotifier {
       debugPrint("Error deleting job: $e");
     }
     _setLoading(false);
+  }
+
+  Future<void> saveAtsPlatform(AtsPlatform platform) async {
+    if (_user == null) return;
+    _setLoading(true);
+    try {
+      if (platform.id.isEmpty) {
+        await _firestore.collection('ats_platforms').add(platform.toMap());
+      } else {
+        await _firestore.collection('ats_platforms').doc(platform.id).update(platform.toMap());
+      }
+    } catch (e) {
+      debugPrint("Error saving ATS platform: $e");
+    }
+    _setLoading(false);
+  }
+
+  Future<void> deleteAtsPlatform(String platformId) async {
+    if (_user == null) return;
+    _setLoading(true);
+    try {
+      await _firestore.collection('ats_platforms').doc(platformId).delete();
+    } catch (e) {
+      debugPrint("Error deleting ATS platform: $e");
+    }
+    _setLoading(false);
+  }
+
+  Future<void> toggleAtsPlatform(String platformId, bool isEnabled) async {
+    if (_user == null) return;
+    try {
+      await _firestore.collection('ats_platforms').doc(platformId).update({'is_enabled': isEnabled});
+    } catch (e) {
+      debugPrint("Error toggling ATS platform: $e");
+    }
   }
 
   RunProgress? _activeProgress;

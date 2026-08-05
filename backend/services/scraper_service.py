@@ -58,6 +58,17 @@ def scrape_jobs(
         "updated_at": firestore.SERVER_TIMESTAMP,
     })
 
+    # Fetch user's ATS platforms from Firestore
+    ats_platforms_ref = db.collection("ats_platforms").where("user_id", "==", user_id).stream()
+    dynamic_ats_domains = {}
+    for doc in ats_platforms_ref:
+        data = doc.to_dict()
+        if data.get("is_enabled", True):
+            dynamic_ats_domains[data.get("name")] = data.get("domain")
+    
+    if not dynamic_ats_domains:
+        dynamic_ats_domains = ats_domains
+
     for ats in target_ats:
         doc = progress_ref.get()
         if doc.exists and doc.to_dict().get("command") == "STOP":
@@ -70,12 +81,12 @@ def scrape_jobs(
             })
             return all_jobs
 
-        if ats not in ats_domains:
+        if ats not in dynamic_ats_domains:
             continue
 
         progress_ref.update({"current_ats": ats, "updated_at": firestore.SERVER_TIMESTAMP})
-        logger.log(f"\\n--- Scraping {ats} ---")
-        domain = ats_domains[ats]
+        logger.log(f"\n--- Scraping {ats} ---")
+        domain = dynamic_ats_domains[ats]
         prompt = f"Find recently posted jobs matching titles: {title_str} in locations: {loc_str}."
 
         for attempt in range(max_retries):

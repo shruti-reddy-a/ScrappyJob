@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../services/firebase_service.dart';
 import '../pages/active_configurations_view.dart';
 import '../pages/execution_history_view.dart';
+import '../pages/active_platforms_view.dart';
 
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
@@ -14,9 +15,7 @@ class DashboardTab extends StatelessWidget {
     final activeJobsCount = activeJobs.length;
     final totalScraped = service.jobRuns.fold<int>(0, (sum, run) => sum + run.totalFound);
     final totalRuns = service.jobRuns.length;
-    
-    // We can just define the number of platforms statically for now based on settings.py
-    const totalPlatforms = 7; 
+    final totalPlatforms = service.activeAtsPlatforms.length; 
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
@@ -66,7 +65,8 @@ class DashboardTab extends StatelessWidget {
                   context,
                   'Active Platforms', 
                   totalPlatforms.toString(), 
-                  Icons.language
+                  Icons.language,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActivePlatformsView())),
                 )
               ),
             ],
