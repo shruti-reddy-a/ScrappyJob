@@ -14,9 +14,20 @@ class ConfigTab extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surfaceContainerLowest,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => ConfigModal(job: job),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))
+        ),
+        child: ConfigModal(
+          job: job,
+          onRun: job != null ? () {
+            Navigator.pop(ctx);
+            _runAgent(context, job);
+          } : null,
+        ),
+      ),
     );
   }
 

@@ -6,7 +6,8 @@ import '../../constants/app_colors.dart';
 
 class ConfigModal extends StatefulWidget {
   final JobConfig? job;
-  const ConfigModal({super.key, this.job});
+  final VoidCallback? onRun;
+  const ConfigModal({super.key, this.job, this.onRun});
 
   @override
   State<ConfigModal> createState() => _ConfigModalState();
@@ -101,9 +102,30 @@ class _ConfigModalState extends State<ConfigModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.job == null ? 'Schedule New Job' : 'Edit Job Config',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.job == null ? 'Schedule New Job' : 'Edit Job Config',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)
+                    ),
+                  ),
+                  if (widget.job != null) ...[
+                    IconButton(
+                      icon: const Icon(Icons.play_circle_fill, color: AppColors.secondary),
+                      onPressed: widget.onRun,
+                      tooltip: 'Run Job Now',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () async {
+                        await context.read<FirebaseService>().deleteJob(widget.job!.id);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                      tooltip: 'Delete Job',
+                    ),
+                  ]
+                ],
               ),
               const SizedBox(height: 24),
               TextFormField(
@@ -218,19 +240,14 @@ class _ConfigModalState extends State<ConfigModal> {
               const SizedBox(height: 32),
               Row(
                 children: [
-                  if (widget.job != null) ...[
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () async {
-                          await context.read<FirebaseService>().deleteJob(widget.job!.id);
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
-                        child: const Text('Delete Job', style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.w500)),
-                      ),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
+                      child: const Text('Cancel', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16, fontWeight: FontWeight.w500)),
                     ),
-                    const SizedBox(width: 16),
-                  ],
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     flex: 2,
                     child: FilledButton(
