@@ -20,9 +20,13 @@ service cloud.firestore {
     
     // User can read and send STOP commands to run_progress
     match /run_progress/{jobId} {
-      // Allow read/write for any authenticated user for now, 
-      // or check if they own the job if we add user_id to run_progress
       allow read, write: if request.auth != null;
+    }
+
+    // User can read/write their own ATS platforms
+    match /ats_platforms/{platformId} {
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // Deny all other access
