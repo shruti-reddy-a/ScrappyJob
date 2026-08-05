@@ -165,8 +165,8 @@ class _LoginViewState extends State<LoginView> {
                   height: 48,
                   child: OutlinedButton.icon(
                     onPressed: _isLoading ? null : _submitGoogle,
-                    icon: Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png',
+                    icon: Image.asset(
+                      'assets/images/google_logo.png',
                       height: 24,
                     ),
                     label: const Text('Sign in with Google', style: TextStyle(fontSize: 16, color: AppColors.onSurface)),
