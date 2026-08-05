@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,10 +28,43 @@ class FirebaseService extends ChangeNotifier {
       if (user != null) {
         _fetchJobs();
         _fetchJobRuns();
+        _listenToGlobalProgress();
       } else {
         _jobs = [];
         _jobRuns = [];
+        _activeProgress = null;
+        _globalProgressSub?.cancel();
         notifyListeners();
+      }
+    });
+  }
+
+  StreamSubscription? _globalProgressSub;
+
+  void _listenToGlobalProgress() {
+    _globalProgressSub?.cancel();
+    if (_user == null) return;
+    _globalProgressSub = _firestore
+        .collection('run_progress')
+        .where('user_id', isEqualTo: _user!.uid)
+        .where('status', isEqualTo: 'RUNNING')
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        // If there is an active running job, set it. 
+        // If there are multiple (unlikely), pick the first.
+        _activeProgress = RunProgress.fromMap(snapshot.docs.first.data(), snapshot.docs.first.id);
+        notifyListeners();
+      } else if (_activeProgress != null && _activeProgress!.status == 'RUNNING') {
+         // It might have just completed or cancelled, let's keep the completed state on screen for a moment
+         // We do this by not nullifying it immediately if it was running, 
+         // but wait, if it completed, we should probably fetch the latest document for the current active job to see its COMPLETED status.
+         _firestore.collection('run_progress').doc(_activeProgress!.id).get().then((doc) {
+             if (doc.exists) {
+                 _activeProgress = RunProgress.fromMap(doc.data()!, doc.id);
+                 notifyListeners();
+             }
+         });
       }
     });
   }

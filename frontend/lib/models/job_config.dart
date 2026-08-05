@@ -63,6 +63,7 @@ class JobRun {
   String id;
   String configId;
   String userId;
+  List<String> jobTitles;
   String runDate;
   int totalFound;
   String driveFolderId;
@@ -79,6 +80,7 @@ class JobRun {
     required this.id,
     required this.configId,
     required this.userId,
+    this.jobTitles = const [],
     required this.runDate,
     required this.totalFound,
     required this.driveFolderId,
@@ -97,6 +99,7 @@ class JobRun {
       id: documentId,
       configId: data['config_id'] ?? '',
       userId: data['user_id'] ?? '',
+      jobTitles: List<String>.from(data['job_titles'] ?? []),
       runDate: data['run_date'] ?? '',
       totalFound: data['total_found'] ?? 0,
       driveFolderId: data['drive_folder_id'] ?? '',

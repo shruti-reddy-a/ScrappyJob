@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/firebase_service.dart';
-import '../../constants/app_colors.dart';
+import '../pages/active_configurations_view.dart';
+import '../pages/execution_history_view.dart';
 
 class DashboardTab extends StatelessWidget {
   const DashboardTab({super.key});
@@ -13,127 +14,120 @@ class DashboardTab extends StatelessWidget {
     final activeJobsCount = activeJobs.length;
     final totalScraped = service.jobRuns.fold<int>(0, (sum, run) => sum + run.totalFound);
     final totalRuns = service.jobRuns.length;
-    final successRuns = service.jobRuns.where((r) => r.status == 'SUCCESS').length;
-    final successRate = totalRuns == 0 ? 0 : (successRuns / totalRuns * 100).round();
+    
+    // We can just define the number of platforms statically for now based on settings.py
+    const totalPlatforms = 7; 
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('System Overview', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-          const SizedBox(height: 24),
+          Text('System Overview', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _buildMetricCard(
-                  'Active Jobs', 
+                  context,
+                  'Active Configurations', 
                   activeJobsCount.toString(), 
                   Icons.tune,
-                  onTap: () => _showActiveJobsDialog(context, activeJobs),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ActiveConfigurationsView())),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(child: _buildMetricCard('Total Scraped', totalScraped.toString(), Icons.find_in_page)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: _buildMetricCard('Total Runs', totalRuns.toString(), Icons.history)),
-              const SizedBox(width: 16),
-              Expanded(child: _buildMetricCard('Success Rate', '$successRate%', Icons.check_circle_outline)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showActiveJobsDialog(BuildContext context, List<dynamic> activeJobs) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surfaceContainerLowest,
-          title: const Text('Active Jobs', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: activeJobs.isEmpty
-                ? const Text('No active jobs.')
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: activeJobs.length,
-                    itemBuilder: (context, index) {
-                      final job = activeJobs[index];
-                      return ListTile(
-                        leading: const Icon(Icons.work, color: AppColors.primary),
-                        title: Text(job.jobTitles.join(', ')),
-                        subtitle: Text('Frequency: ${job.scrapeFrequency}\nLocations: ${job.locations.join(', ')}'),
-                        isThreeLine: true,
-                      );
-                    },
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildMetricCard(String title, String value, IconData icon, {VoidCallback? onTap}) {
-    final card = Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppColors.secondary, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title.toUpperCase(),
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant, letterSpacing: 0.5),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  context,
+                  'Jobs Discovered', 
+                  totalScraped.toString(), 
+                  Icons.find_in_page,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExecutionHistoryView())),
+                )
               ),
-              if (onTap != null) ...[
-                const Spacer(),
-                const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.onSurfaceVariant),
-              ]
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricCard(
+                  context,
+                  'Execution History', 
+                  totalRuns.toString(), 
+                  Icons.history,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExecutionHistoryView())),
+                )
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMetricCard(
+                  context,
+                  'Active Platforms', 
+                  totalPlatforms.toString(), 
+                  Icons.language
+                )
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
 
-    if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
+  Widget _buildMetricCard(BuildContext context, String title, String value, IconData icon, {VoidCallback? onTap}) {
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        child: card,
-      );
-    }
-    return card;
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        highlightColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title.toUpperCase(),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600, 
+                        color: Theme.of(context).colorScheme.onSurfaceVariant, 
+                        letterSpacing: 0.5
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (onTap != null) ...[
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_ios, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ]
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold, 
+                  color: Theme.of(context).colorScheme.onSurface
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

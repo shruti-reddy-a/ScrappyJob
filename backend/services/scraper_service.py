@@ -51,6 +51,7 @@ def scrape_jobs(
         "total_ats": total_ats,
         "jobs_per_ats": jobs_per_ats,
         "job_run_id": job_run_id,
+        "user_id": user_id,
         "start_time": firestore.SERVER_TIMESTAMP,
         "updated_at": firestore.SERVER_TIMESTAMP,
     })
