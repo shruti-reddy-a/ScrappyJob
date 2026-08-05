@@ -40,6 +40,8 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     logger.log(f"Starting job run for: {', '.join(job_titles)}")
     logger.log(f"User ID: {user_id}")
     
+    start_time = time.time()
+    
     # Create the job run document first
     job_run_ref = db.collection("job_runs").document()
     job_run_id = job_run_ref.id
@@ -62,7 +64,8 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     progress_doc = db.collection("run_progress").document(doc_id).get()
     if progress_doc.exists and progress_doc.to_dict().get("status") == "CANCELLED":
         logger.log("Job was cancelled. Skipping reporting.")
-        _update_job_run(job_run_ref, len(all_jobs), "CANCELLED", logger, jobs=all_jobs)
+        exec_time_ms = int((time.time() - start_time) * 1000)
+        _update_job_run(job_run_ref, len(all_jobs), "CANCELLED", logger, jobs=all_jobs, exec_time=exec_time_ms)
         return
 
     # 2. Excel Generation
@@ -92,15 +95,18 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
         
     # 4. Save Final Status
     logger.log(f"Job completed successfully. Total jobs found: {len(all_jobs)}")
-    _update_job_run(job_run_ref, len(all_jobs), "SUCCESS", logger, jobs=all_jobs)
+    exec_time_ms = int((time.time() - start_time) * 1000)
+    _update_job_run(job_run_ref, len(all_jobs), "SUCCESS", logger, jobs=all_jobs, exec_time=exec_time_ms)
 
 
-def _update_job_run(job_run_ref, total_found: int, status: str, logger: JobLogger, jobs: list = None):
+def _update_job_run(job_run_ref, total_found: int, status: str, logger: JobLogger, jobs: list = None, exec_time: int = 0):
     data = {
         "total_found": total_found,
         "status": status,
         "logs": logger.logs
     }
+    if exec_time > 0:
+        data["execution_time_ms"] = exec_time
     if jobs is not None:
         data["jobs"] = jobs
     job_run_ref.update(data)

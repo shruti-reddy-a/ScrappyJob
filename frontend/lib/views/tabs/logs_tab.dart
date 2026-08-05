@@ -99,7 +99,7 @@ class LogsTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Execution Log History', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+          const Text('Execution Logs', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
           const SizedBox(height: 24),
           Expanded(
             child: runs.isEmpty
@@ -111,61 +111,61 @@ class LogsTab extends StatelessWidget {
                       side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        child: DataTable(
-                          headingTextStyle: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
-                          columns: const [
-                            DataColumn(label: Text('Date')),
-                            DataColumn(label: Text('Status')),
-                            DataColumn(label: Text('Total Found')),
-                            DataColumn(label: Text('Exec Time (ms)')),
-                            DataColumn(label: Text('Action')),
-                          ],
-                          rows: runs.map((run) {
-                            return DataRow(cells: [
-                              DataCell(Text(run.createdAt != null
-                                  ? DateFormat('MMM dd, yyyy HH:mm').format(run.createdAt!)
-                                  : run.runDate)),
-                              DataCell(Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: run.status == 'SUCCESS' ? Colors.green.shade50 : Colors.orange.shade50,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(run.status,
-                                    style: TextStyle(
-                                        color: run.status == 'SUCCESS' ? Colors.green.shade800 : Colors.orange.shade800,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12)),
-                              )),
-                              DataCell(Text(run.totalFound.toString())),
-                              DataCell(Text(run.executionTimeMs.toString())),
-                              DataCell(Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.terminal, size: 20, color: AppColors.onSurfaceVariant),
-                                    tooltip: 'View Logs',
-                                    onPressed: () => _showLogsModal(context, run),
-                                  ),
-                                  if (run.excelFileUrl.isNotEmpty)
-                                    TextButton.icon(
-                                      icon: const Icon(Icons.table_chart, size: 16, color: AppColors.secondary),
-                                      label: const Text('Sheet', style: TextStyle(color: AppColors.secondary)),
-                                      onPressed: () => _launchUrl(context, run.excelFileUrl),
-                                    )
-                                  else
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                                      child: Text('N/A', style: TextStyle(color: AppColors.outline)),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                            child: DataTable(
+                              headingTextStyle: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
+                              columns: const [
+                                DataColumn(label: Text('Date')),
+                                DataColumn(label: Text('Status')),
+                                DataColumn(label: Text('Total Found')),
+                                DataColumn(label: Text('Execution Time (ms)')),
+                                DataColumn(label: Text('Action')),
+                              ],
+                              rows: runs.map((run) {
+                                return DataRow(cells: [
+                                  DataCell(Text(run.createdAt != null
+                                      ? DateFormat('MMM dd, yyyy HH:mm').format(run.createdAt!)
+                                      : run.runDate)),
+                                  DataCell(Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: run.status == 'SUCCESS' ? Colors.green.shade50 : Colors.orange.shade50,
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
-                                ],
-                              )),
-                            ]);
-                          }).toList(),
-                        ),
-                      ),
+                                    child: Text(run.status,
+                                        style: TextStyle(
+                                            color: run.status == 'SUCCESS' ? Colors.green.shade800 : Colors.orange.shade800,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
+                                  )),
+                                  DataCell(Text(run.totalFound.toString())),
+                                  DataCell(Text(run.executionTimeMs.toString())),
+                                  DataCell(Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.terminal, size: 20, color: AppColors.onSurfaceVariant),
+                                        tooltip: 'View Logs',
+                                        onPressed: () => _showLogsModal(context, run),
+                                      ),
+                                      if (run.excelFileUrl.isNotEmpty)
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.table_chart, size: 16, color: AppColors.secondary),
+                                          label: const Text('Sheet', style: TextStyle(color: AppColors.secondary)),
+                                          onPressed: () => _launchUrl(context, run.excelFileUrl),
+                                        )
+                                    ],
+                                  )),
+                                ]);
+                              }).toList(),
+                            ),
+                          ),
+                        );
+                      }
                     ),
                   ),
           ),
