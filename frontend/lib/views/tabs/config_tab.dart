@@ -73,6 +73,7 @@ class ConfigTab extends StatelessWidget {
                       style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16),
                     ),
                   )
+                  )
                 : ListView.builder(
                     padding: const EdgeInsets.only(top: 16, bottom: 24),
                     itemCount: jobs.length,
@@ -82,6 +83,7 @@ class ConfigTab extends StatelessWidget {
                         job: job,
                         onEdit: () => _showConfigModal(context, job: job),
                         onRun: () => _runAgent(context, job),
+                        onDelete: () => context.read<FirebaseService>().deleteJob(job.id),
                       );
                     },
                   ),
@@ -114,123 +116,110 @@ class JobCard extends StatelessWidget {
   final JobConfig job;
   final VoidCallback onEdit;
   final VoidCallback onRun;
+  final VoidCallback onDelete;
 
-  const JobCard({super.key, required this.job, required this.onEdit, required this.onRun});
+  const JobCard({super.key, required this.job, required this.onEdit, required this.onRun, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      color: AppColors.surfaceContainerLowest,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          )
-        ],
+        side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ExpansionTile(
+        shape: const RoundedRectangleBorder(side: BorderSide.none), // removes inner borders when expanded
+        title: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.tune, color: AppColors.outline, size: 24),
-                    SizedBox(width: 8),
-                    Text(
-                      'Configuration Parameters',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.play_circle_fill, color: AppColors.secondary, size: 28),
-                      onPressed: onRun,
-                      tooltip: 'Run Job Now',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      onTap: onEdit,
-                      borderRadius: BorderRadius.circular(16),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        child: Text(
-                          'Edit',
-                          style: TextStyle(
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              child: Divider(height: 1, color: Color(0x33C2C6D4)), // outlineVariant with 0.2 opacity
-            ),
-            _buildParamRow('TARGET JOB TITLES', job.jobTitles.join(', ')),
-            const SizedBox(height: 24),
-            _buildParamRow('LOCATIONS', job.locations.join(', ')),
-            const SizedBox(height: 24),
-            _buildParamRow('SCRAPE FREQUENCY', job.scrapeFrequency),
-            const SizedBox(height: 24),
-            _buildParamRow('TIMEFRAME', job.timeframe),
-            const SizedBox(height: 24),
-            const Text(
-              'TARGET ATS PLATFORMS',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppColors.onSurfaceVariant,
-                letterSpacing: 0.5,
+            Expanded(
+              child: Text(
+                job.jobLabel,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.onSurface),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: job.targetAts.map((ats) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryContainer,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.secondaryContainer.withValues(alpha: 0.5)),
-                  ),
-                  child: Text(
-                    ats,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                      color: AppColors.onSecondaryContainer,
-                      letterSpacing: 0.05,
-                    ),
-                  ),
-                );
-              }).toList(),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.play_circle_fill, color: AppColors.secondary),
+                  onPressed: onRun,
+                  tooltip: 'Run Job Now',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: AppColors.outline),
+                  onPressed: onEdit,
+                  tooltip: 'Edit Job',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: onDelete,
+                  tooltip: 'Delete Job',
+                ),
+              ],
             ),
           ],
         ),
+        leading: const Icon(Icons.tune, color: AppColors.outline),
+        childrenPadding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 1, color: Color(0x33C2C6D4)),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _buildParamRow('TARGET JOB TITLES', job.jobTitles.join(', '))),
+              const SizedBox(width: 16),
+              Expanded(child: _buildParamRow('LOCATIONS', job.locations.join(', '))),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _buildParamRow('SCRAPE FREQUENCY', job.scrapeFrequency)),
+              const SizedBox(width: 16),
+              Expanded(child: _buildParamRow('TIMEFRAME', job.timeframe)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'TARGET ATS PLATFORMS',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.onSurfaceVariant,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: job.targetAts.map((ats) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.secondaryContainer.withValues(alpha: 0.5)),
+                ),
+                child: Text(
+                  ats,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                    color: AppColors.onSecondaryContainer,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -243,7 +232,7 @@ class JobCard extends StatelessWidget {
           label,
           style: const TextStyle(
             fontSize: 11,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             color: AppColors.onSurfaceVariant,
             letterSpacing: 0.5,
           ),

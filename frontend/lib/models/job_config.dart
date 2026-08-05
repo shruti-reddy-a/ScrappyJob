@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class JobConfig {
   String id;
   String userId;
+  String jobLabel;
   List<String> jobTitles;
   List<String> locations;
   List<String> targetAts;
@@ -16,6 +17,7 @@ class JobConfig {
   JobConfig({
     required this.id,
     required this.userId,
+    this.jobLabel = "My Scraper Job",
     this.jobTitles = const ["Product Manager", "AI Product Manager", "Senior Product Manager"],
     this.locations = const ["San Francisco Bay Area", "California, USA"],
     this.targetAts = const ["Greenhouse", "Ashby", "Workday", "iCIMS", "Lever", "BambooHR", "Workable", "LinkedIn", "Indeed"],
@@ -31,6 +33,7 @@ class JobConfig {
     return JobConfig(
       id: documentId,
       userId: data['user_id'] ?? '',
+      jobLabel: data['job_label'] ?? 'My Scraper Job',
       jobTitles: List<String>.from(data['job_titles'] ?? []),
       locations: List<String>.from(data['locations'] ?? []),
       targetAts: List<String>.from(data['target_ats'] ?? []),
@@ -46,6 +49,7 @@ class JobConfig {
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
+      'job_label': jobLabel,
       'job_titles': jobTitles,
       'locations': locations,
       'target_ats': targetAts,

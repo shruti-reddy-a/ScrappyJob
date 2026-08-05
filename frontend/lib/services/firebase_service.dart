@@ -134,6 +134,11 @@ class FirebaseService extends ChangeNotifier {
           .snapshots()
           .listen((snapshot) {
         _jobs = snapshot.docs.map((doc) => JobConfig.fromMap(doc.data(), doc.id)).toList();
+        _jobs.sort((a, b) {
+          final aTime = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+          return bTime.compareTo(aTime);
+        });
         notifyListeners();
       });
     } catch (e) {

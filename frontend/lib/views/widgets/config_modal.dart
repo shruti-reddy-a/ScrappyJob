@@ -14,6 +14,7 @@ class ConfigModal extends StatefulWidget {
 
 class _ConfigModalState extends State<ConfigModal> {
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _jobLabelCtrl;
   late TextEditingController _jobTitlesCtrl;
   late TextEditingController _locationsCtrl;
   late TextEditingController _emailCtrl;
@@ -29,6 +30,7 @@ class _ConfigModalState extends State<ConfigModal> {
   @override
   void initState() {
     super.initState();
+    _jobLabelCtrl = TextEditingController(text: widget.job?.jobLabel ?? 'My Scraper Job');
     _jobTitlesCtrl = TextEditingController(text: widget.job?.jobTitles.join(', ') ?? 'Product manager, senior product manager');
     _locationsCtrl = TextEditingController(text: widget.job?.locations.join(', ') ?? 'SF Bay area, CA, USA');
     _emailCtrl = TextEditingController(text: widget.job?.targetEmail ?? '');
@@ -43,6 +45,7 @@ class _ConfigModalState extends State<ConfigModal> {
 
   @override
   void dispose() {
+    _jobLabelCtrl.dispose();
     _jobTitlesCtrl.dispose();
     _locationsCtrl.dispose();
     _emailCtrl.dispose();
@@ -57,6 +60,7 @@ class _ConfigModalState extends State<ConfigModal> {
       final updatedJob = JobConfig(
         id: widget.job?.id ?? '',
         userId: service.user!.uid,
+        jobLabel: _jobLabelCtrl.text.trim(),
         jobTitles: _jobTitlesCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         locations: _locationsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         targetAts: _selectedAts,
@@ -93,6 +97,16 @@ class _ConfigModalState extends State<ConfigModal> {
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)
               ),
               const SizedBox(height: 24),
+              TextFormField(
+                controller: _jobLabelCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Job Label (e.g. SF Product Managers)',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
+                ),
+                validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _jobTitlesCtrl,
                 decoration: InputDecoration(

@@ -7,53 +7,54 @@ void main() {
     test('JobConfig.fromMap correctly parses data', () {
       final data = {
         'user_id': 'user123',
-        'job_titles': ['Engineer'],
-        'locations': ['Remote'],
-        'target_ats': ['Workday'],
-        'timeframe': 'Past 24 Hours',
+        'job_label': 'Senior PM Job',
+        'job_titles': ['Product Manager', 'Senior PM'],
+        'locations': ['SF', 'NY'],
+        'target_ats': ['Greenhouse'],
+        'timeframe': 'Past 48 Hours',
         'scrape_frequency': 'Daily',
         'target_email': 'test@example.com',
-        'is_active': false,
-        'created_at': Timestamp.fromDate(DateTime(2023, 1, 1)),
+        'is_active': true,
       };
 
-      final jobConfig = JobConfig.fromMap(data, 'doc123');
+      final job = JobConfig.fromMap(data, 'doc123');
 
-      expect(jobConfig.id, 'doc123');
-      expect(jobConfig.userId, 'user123');
-      expect(jobConfig.jobTitles, ['Engineer']);
-      expect(jobConfig.locations, ['Remote']);
-      expect(jobConfig.targetAts, ['Workday']);
-      expect(jobConfig.timeframe, 'Past 24 Hours');
-      expect(jobConfig.scrapeFrequency, 'Daily');
-      expect(jobConfig.targetEmail, 'test@example.com');
-      expect(jobConfig.isActive, false);
-      expect(jobConfig.createdAt?.year, 2023);
+      expect(job.id, 'doc123');
+      expect(job.userId, 'user123');
+      expect(job.jobLabel, 'Senior PM Job');
+      expect(job.jobTitles, ['Product Manager', 'Senior PM']);
+      expect(job.locations, ['SF', 'NY']);
+      expect(job.targetAts, ['Greenhouse']);
+      expect(job.timeframe, 'Past 48 Hours');
+      expect(job.scrapeFrequency, 'Daily');
+      expect(job.targetEmail, 'test@example.com');
+      expect(job.isActive, true);
     });
 
     test('JobConfig.toMap correctly serializes data', () {
       final jobConfig = JobConfig(
         id: 'doc123',
         userId: 'user123',
-        jobTitles: ['Engineer'],
-        locations: ['Remote'],
-        targetAts: ['Workday'],
-        timeframe: 'Past 24 Hours',
-        scrapeFrequency: 'Daily',
-        targetEmail: 'test@example.com',
-        isActive: false,
+        jobLabel: 'Backend Roles',
+        jobTitles: ['Developer'],
+        locations: ['Onsite'],
+        targetAts: ['iCIMS'],
+        timeframe: 'Past 48 Hours',
+        scrapeFrequency: 'Weekly',
+        targetEmail: 'admin@example.com',
+        isActive: true,
       );
 
       final map = jobConfig.toMap();
-
       expect(map['user_id'], 'user123');
-      expect(map['job_titles'], ['Engineer']);
-      expect(map['locations'], ['Remote']);
-      expect(map['target_ats'], ['Workday']);
-      expect(map['timeframe'], 'Past 24 Hours');
-      expect(map['scrape_frequency'], 'Daily');
-      expect(map['target_email'], 'test@example.com');
-      expect(map['is_active'], false);
+      expect(map['job_label'], 'Backend Roles');
+      expect(map['job_titles'], ['Developer']);
+      expect(map['locations'], ['Onsite']);
+      expect(map['target_ats'], ['iCIMS']);
+      expect(map['timeframe'], 'Past 48 Hours');
+      expect(map['scrape_frequency'], 'Weekly');
+      expect(map['target_email'], 'admin@example.com');
+      expect(map['is_active'], true);
     });
   });
 
