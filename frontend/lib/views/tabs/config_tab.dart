@@ -73,7 +73,6 @@ class ConfigTab extends StatelessWidget {
                       style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16),
                     ),
                   )
-                  )
                 : ListView.builder(
                     padding: const EdgeInsets.only(top: 16, bottom: 24),
                     itemCount: jobs.length,

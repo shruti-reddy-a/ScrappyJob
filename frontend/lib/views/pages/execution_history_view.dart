@@ -50,9 +50,13 @@ class ExecutionHistoryView extends StatelessWidget {
                 Color statusColor;
                 if (isSuccess) {
                   statusColor = Colors.green.shade700;
-                } else if (isRunning) statusColor = Colors.blue.shade700;
-                else if (isCancelled) statusColor = Colors.orange.shade700;
-                else statusColor = Colors.red.shade700;
+                } else if (isRunning) {
+                  statusColor = Colors.blue.shade700;
+                } else if (isCancelled) {
+                  statusColor = Colors.orange.shade700;
+                } else {
+                  statusColor = Colors.red.shade700;
+                }
 
                 return Card(
                   elevation: 0,
