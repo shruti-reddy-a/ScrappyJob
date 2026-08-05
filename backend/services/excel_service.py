@@ -7,8 +7,11 @@ def generate_excel(jobs: List[Dict[str, Any]], filename: str) -> str:
     df = pd.DataFrame(jobs)
     if df.empty:
         df = pd.DataFrame(
-            columns=["Source ATS", "Job Title", "Company", "Location", "Application Link", "Posted Date", "Snippet/Notes"]
+            columns=["Source ATS", "Job Title", "Company", "Location", "Application Link", "Posted Date", "Posting Time", "Snippet/Notes"]
         )
+    if "_iso_dt" in df.columns:
+        df = df.drop(columns=["_iso_dt"])
+    
     writer = pd.ExcelWriter(filename, engine="openpyxl")
     df.to_excel(writer, index=False, sheet_name="Job Postings")
     worksheet = writer.sheets["Job Postings"]

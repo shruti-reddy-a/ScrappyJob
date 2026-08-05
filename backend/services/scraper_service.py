@@ -31,6 +31,8 @@ def scrape_jobs(
                         "location": {"type": "string"},
                         "application_link": {"type": "string"},
                         "posted_date": {"type": "string"},
+                        "posting_time": {"type": "string"},
+                        "posted_iso_datetime": {"type": "string", "description": "ISO 8601 format of when the job was posted (e.g. YYYY-MM-DDTHH:MM:SS) for sorting."},
                         "snippet": {"type": "string"},
                     },
                     "required": ["job_title", "company", "application_link"],
@@ -98,6 +100,8 @@ def scrape_jobs(
                                 "Location": job.get("location", "N/A"),
                                 "Application Link": url,
                                 "Posted Date": job.get("posted_date", "N/A"),
+                                "Posting Time": job.get("posting_time", "N/A"),
+                                "_iso_dt": job.get("posted_iso_datetime", ""), # hidden field for sorting
                                 "Snippet/Notes": job.get("snippet", ""),
                             })
                             jobs_per_ats[ats] += 1
@@ -126,7 +130,7 @@ def scrape_jobs(
                                 "command": firestore.DELETE_FIELD,
                                 "updated_at": firestore.SERVER_TIMESTAMP,
                             })
-                            return all_jobs
+                            return sorted(all_jobs, key=lambda x: x.get("_iso_dt", ""), reverse=True)
                     else:
                         logger.log(f"Max retries reached for {ats}.")
                 else:
@@ -157,11 +161,14 @@ def scrape_jobs(
                         "command": firestore.DELETE_FIELD,
                         "updated_at": firestore.SERVER_TIMESTAMP,
                     })
-                    return all_jobs
+                    return sorted(all_jobs, key=lambda x: x.get("_iso_dt", ""), reverse=True)
 
     progress_ref.update({
         "status": "COMPLETED",
         "current_ats": "Finished",
         "updated_at": firestore.SERVER_TIMESTAMP,
     })
+    
+    # Sort all_jobs by the hidden ISO datetime descending
+    all_jobs.sort(key=lambda x: x.get("_iso_dt", ""), reverse=True)
     return all_jobs
