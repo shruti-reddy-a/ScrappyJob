@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/job_config.dart';
 
 class FirebaseService extends ChangeNotifier {
@@ -18,6 +19,9 @@ class FirebaseService extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   FirebaseService() {
+    if (!kIsWeb) {
+      GoogleSignIn.instance.initialize();
+    }
     _auth.authStateChanges().listen((user) {
       _user = user;
       if (user != null) {
@@ -53,8 +57,38 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
+  Future<String?> signInWithGoogle() async {
+    try {
+      if (kIsWeb) {
+        GoogleAuthProvider authProvider = GoogleAuthProvider();
+        await _auth.signInWithPopup(authProvider);
+      } else {
+        final googleUser = await GoogleSignIn.instance.authenticate();
+        if (googleUser == null) return "Sign in cancelled";
+
+        final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+        await _auth.signInWithCredential(credential);
+      }
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future<void> signOut() async {
-    await _auth.signOut();
+    try {
+      if (!kIsWeb) {
+        await GoogleSignIn.instance.signOut();
+      }
+      await _auth.signOut();
+    } catch (e) {
+      debugPrint("Error signing out: $e");
+    }
   }
 
   Future<void> _fetchJobs() async {

@@ -48,6 +48,23 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  Future<void> _submitGoogle() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final authService = context.read<FirebaseService>();
+    final error = await authService.signInWithGoogle();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = error;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +146,34 @@ class _LoginViewState extends State<LoginView> {
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
                         : Text(_isLogin ? 'Login' : 'Sign Up', style: const TextStyle(fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.outlineVariant)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text("OR", style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12)),
+                    ),
+                    Expanded(child: Divider(color: AppColors.outlineVariant)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _submitGoogle,
+                    icon: Image.network(
+                      'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+                      height: 24,
+                    ),
+                    label: const Text('Sign in with Google', style: TextStyle(fontSize: 16, color: AppColors.onSurface)),
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
