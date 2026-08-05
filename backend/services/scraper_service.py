@@ -5,7 +5,7 @@ from firecrawl import FirecrawlApp
 from config.settings import ats_domains, max_retries
 
 def scrape_jobs(
-    config: Dict[str, Any], firecrawl: FirecrawlApp, db, user_id: str, job_id: str, logger
+    config: Dict[str, Any], firecrawl: FirecrawlApp, db, user_id: str, job_id: str, job_run_id: str, logger
 ) -> List[Dict[str, Any]]:
     job_titles = config.get("job_titles", [])
     locations = config.get("locations", [])
@@ -14,6 +14,9 @@ def scrape_jobs(
     seen_urls = set()
     title_str = ", ".join(job_titles)
     loc_str = ", ".join(locations)
+    
+    # Initialize dictionary to keep track of job counts per ATS
+    jobs_per_ats = {ats: 0 for ats in target_ats}
 
     schema = {
         "type": "object",
@@ -46,6 +49,9 @@ def scrape_jobs(
         "jobs_found_so_far": 0,
         "ats_completed": 0,
         "total_ats": total_ats,
+        "jobs_per_ats": jobs_per_ats,
+        "job_run_id": job_run_id,
+        "start_time": firestore.SERVER_TIMESTAMP,
         "updated_at": firestore.SERVER_TIMESTAMP,
     })
 
@@ -93,6 +99,7 @@ def scrape_jobs(
                                 "Posted Date": job.get("posted_date", "N/A"),
                                 "Snippet/Notes": job.get("snippet", ""),
                             })
+                            jobs_per_ats[ats] += 1
                 break
             except Exception as e:
                 error_str = str(e)
@@ -128,6 +135,7 @@ def scrape_jobs(
         progress_ref.update({
             "jobs_found_so_far": len(all_jobs),
             "ats_completed": ats_completed,
+            "jobs_per_ats": jobs_per_ats,
             "updated_at": firestore.SERVER_TIMESTAMP,
         })
 

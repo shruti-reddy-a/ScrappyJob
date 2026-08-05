@@ -120,6 +120,9 @@ class RunProgress {
   int atsCompleted;
   int totalAts;
   String command;
+  Map<String, int> jobsPerAts;
+  String? jobRunId;
+  DateTime? startTime;
   DateTime? updatedAt;
 
   RunProgress({
@@ -130,6 +133,9 @@ class RunProgress {
     required this.atsCompleted,
     required this.totalAts,
     required this.command,
+    this.jobsPerAts = const {},
+    this.jobRunId,
+    this.startTime,
     this.updatedAt,
   });
 
@@ -142,6 +148,11 @@ class RunProgress {
       atsCompleted: data['ats_completed'] ?? 0,
       totalAts: data['total_ats'] ?? 0,
       command: data['command'] ?? '',
+      jobsPerAts: data['jobs_per_ats'] != null 
+          ? Map<String, int>.from(data['jobs_per_ats']) 
+          : {},
+      jobRunId: data['job_run_id'],
+      startTime: data['start_time'] != null ? (data['start_time'] as Timestamp).toDate() : null,
       updatedAt: data['updated_at'] != null ? (data['updated_at'] as Timestamp).toDate() : null,
     );
   }

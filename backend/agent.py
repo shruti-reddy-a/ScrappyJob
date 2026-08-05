@@ -40,15 +40,29 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     logger.log(f"Starting job run for: {', '.join(job_titles)}")
     logger.log(f"User ID: {user_id}")
     
+    # Create the job run document first
+    job_run_ref = db.collection("job_runs").document()
+    job_run_id = job_run_ref.id
+    job_run_ref.set({
+        "config_id": doc_id,
+        "user_id": user_id,
+        "job_titles": config.get("job_titles", []),
+        "locations": config.get("locations", []),
+        "total_found": 0,
+        "status": "IN_PROGRESS",
+        "created_at": firestore.SERVER_TIMESTAMP,
+        "logs": logger.logs
+    })
+    
     # 1. Scrape
     logger.log("Starting scraping phase...")
-    all_jobs = scrape_jobs(config, firecrawl, db, user_id, doc_id, logger)
+    all_jobs = scrape_jobs(config, firecrawl, db, user_id, doc_id, job_run_id, logger)
     
     # Check if we got cancelled
     progress_doc = db.collection("run_progress").document(doc_id).get()
     if progress_doc.exists and progress_doc.to_dict().get("status") == "CANCELLED":
         logger.log("Job was cancelled. Skipping reporting.")
-        _save_job_run(doc_id, user_id, config, len(all_jobs), "CANCELLED", logger)
+        _update_job_run(job_run_ref, len(all_jobs), "CANCELLED", logger)
         return
 
     # 2. Excel Generation
@@ -78,18 +92,13 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
         
     # 4. Save Final Status
     logger.log(f"Job completed successfully. Total jobs found: {len(all_jobs)}")
-    _save_job_run(doc_id, user_id, config, len(all_jobs), "SUCCESS", logger)
+    _update_job_run(job_run_ref, len(all_jobs), "SUCCESS", logger)
 
 
-def _save_job_run(job_id: str, user_id: str, config: dict, total_found: int, status: str, logger: JobLogger):
-    db.collection("job_runs").add({
-        "job_id": job_id,
-        "user_id": user_id,
-        "job_titles": config.get("job_titles", []),
-        "locations": config.get("locations", []),
+def _update_job_run(job_run_ref, total_found: int, status: str, logger: JobLogger):
+    job_run_ref.update({
         "total_found": total_found,
         "status": status,
-        "created_at": firestore.SERVER_TIMESTAMP,
         "logs": logger.logs
     })
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart' hide FirebaseService;
 import 'package:provider/provider.dart';
 import 'services/firebase_service.dart';
+import 'views/login_view.dart';
 import 'views/dashboard_view.dart';
 import 'firebase_options.dart'; // Ensure you generate this via flutterfire configure
 
@@ -48,31 +49,15 @@ class JobScraperApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatefulWidget {
+class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
-
-  @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
-
-class _AuthWrapperState extends State<AuthWrapper> {
-  @override
-  void initState() {
-    super.initState();
-    // Auto sign-in anonymously for demonstration purposes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<FirebaseService>().signInAnonymously();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FirebaseService>(
       builder: (context, service, child) {
         if (service.user == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const LoginView();
         }
         return const DashboardView();
       },

@@ -9,7 +9,8 @@ class DashboardTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<FirebaseService>();
-    final activeJobsCount = service.jobs.where((j) => j.isActive).length;
+    final activeJobs = service.jobs.where((j) => j.isActive).toList();
+    final activeJobsCount = activeJobs.length;
     final totalScraped = service.jobRuns.fold<int>(0, (sum, run) => sum + run.totalFound);
     final totalRuns = service.jobRuns.length;
     final successRuns = service.jobRuns.where((r) => r.status == 'SUCCESS').length;
@@ -24,7 +25,14 @@ class DashboardTab extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(child: _buildMetricCard('Active Jobs', activeJobsCount.toString(), Icons.tune)),
+              Expanded(
+                child: _buildMetricCard(
+                  'Active Jobs', 
+                  activeJobsCount.toString(), 
+                  Icons.tune,
+                  onTap: () => _showActiveJobsDialog(context, activeJobs),
+                ),
+              ),
               const SizedBox(width: 16),
               Expanded(child: _buildMetricCard('Total Scraped', totalScraped.toString(), Icons.find_in_page)),
             ],
@@ -42,8 +50,44 @@ class DashboardTab extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricCard(String title, String value, IconData icon) {
-    return Container(
+  void _showActiveJobsDialog(BuildContext context, List<dynamic> activeJobs) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceContainerLowest,
+          title: const Text('Active Jobs', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: activeJobs.isEmpty
+                ? const Text('No active jobs.')
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: activeJobs.length,
+                    itemBuilder: (context, index) {
+                      final job = activeJobs[index];
+                      return ListTile(
+                        leading: const Icon(Icons.work, color: AppColors.primary),
+                        title: Text(job.jobTitles.join(', ')),
+                        subtitle: Text('Frequency: ${job.scrapeFrequency}\nLocations: ${job.locations.join(', ')}'),
+                        isThreeLine: true,
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMetricCard(String title, String value, IconData icon, {VoidCallback? onTap}) {
+    final card = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
@@ -68,6 +112,10 @@ class DashboardTab extends StatelessWidget {
                 title.toUpperCase(),
                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.onSurfaceVariant, letterSpacing: 0.5),
               ),
+              if (onTap != null) ...[
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.onSurfaceVariant),
+              ]
             ],
           ),
           const SizedBox(height: 12),
@@ -78,5 +126,14 @@ class DashboardTab extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: card,
+      );
+    }
+    return card;
   }
 }

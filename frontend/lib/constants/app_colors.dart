@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const background = Color(0xFFF9F9FC);
+  static const surface = Color(0xFFF9F9FC);
+  static const primary = Color(0xFF006B5F);
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const error = Color(0xFFBA1A1A);
   static const onBackground = Color(0xFF1A1C1E);
   static const surfaceContainerHigh = Color(0xFFE8E8EA);
   static const surfaceContainerLowest = Color(0xFFFFFFFF);

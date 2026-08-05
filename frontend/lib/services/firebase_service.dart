@@ -31,12 +31,30 @@ class FirebaseService extends ChangeNotifier {
     });
   }
 
-  Future<void> signInAnonymously() async {
+  Future<String?> signInWithEmail(String email, String password) async {
     try {
-      await _auth.signInAnonymously();
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
     } catch (e) {
-      debugPrint("Error signing in anonymously: $e");
+      return e.toString();
     }
+  }
+
+  Future<String?> registerWithEmail(String email, String password) async {
+    try {
+      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 
   Future<void> _fetchJobs() async {

@@ -39,7 +39,10 @@ class _DashboardViewState extends State<DashboardView> {
         children: [
           const DashboardTab(),
           ConfigTab(onRunStarted: () => setState(() => _currentIndex = 2)),
-          const AgentTab(),
+          AgentTab(onViewLog: (jobRunId) {
+            // Future feature: select the specific log by jobRunId in LogsTab
+            setState(() => _currentIndex = 3);
+          }),
           const LogsTab(),
           const SettingsTab(),
         ],
