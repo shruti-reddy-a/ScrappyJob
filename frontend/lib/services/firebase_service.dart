@@ -104,10 +104,7 @@ class FirebaseService extends ChangeNotifier {
 
   RunProgress? _activeProgress;
   RunProgress? get activeProgress => _activeProgress;
-  String? _activeJobId;
-  
   void setActiveJobId(String? jobId) {
-    _activeJobId = jobId;
     if (jobId != null) {
       _listenToProgress(jobId);
     } else {
