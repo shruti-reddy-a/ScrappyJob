@@ -59,6 +59,58 @@ class JobConfig {
   }
 }
 
+class ScrapedJob {
+  String sourceAts;
+  String jobTitle;
+  String company;
+  String location;
+  String applicationLink;
+  String postedDate;
+  String postingTime;
+  String snippetNotes;
+  bool isApplied;
+
+  ScrapedJob({
+    required this.sourceAts,
+    required this.jobTitle,
+    required this.company,
+    required this.location,
+    required this.applicationLink,
+    required this.postedDate,
+    required this.postingTime,
+    required this.snippetNotes,
+    this.isApplied = false,
+  });
+
+  factory ScrapedJob.fromMap(Map<String, dynamic> data) {
+    return ScrapedJob(
+      sourceAts: data['Source ATS'] ?? '',
+      jobTitle: data['Job Title'] ?? '',
+      company: data['Company'] ?? '',
+      location: data['Location'] ?? '',
+      applicationLink: data['Application Link'] ?? '',
+      postedDate: data['Posted Date'] ?? '',
+      postingTime: data['Posting Time'] ?? '',
+      snippetNotes: data['Snippet/Notes'] ?? '',
+      isApplied: data['isApplied'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'Source ATS': sourceAts,
+      'Job Title': jobTitle,
+      'Company': company,
+      'Location': location,
+      'Application Link': applicationLink,
+      'Posted Date': postedDate,
+      'Posting Time': postingTime,
+      'Snippet/Notes': snippetNotes,
+      'isApplied': isApplied,
+    };
+  }
+}
+
 class JobRun {
   String id;
   String configId;
@@ -74,6 +126,7 @@ class JobRun {
   String status;
   int executionTimeMs;
   List<Map<String, dynamic>> logs;
+  List<ScrapedJob> jobs;
   DateTime? createdAt;
 
   JobRun({
@@ -91,6 +144,7 @@ class JobRun {
     required this.status,
     required this.executionTimeMs,
     this.logs = const [],
+    this.jobs = const [],
     this.createdAt,
   });
 
@@ -110,6 +164,7 @@ class JobRun {
       status: data['status'] ?? '',
       executionTimeMs: data['execution_time_ms'] ?? 0,
       logs: data['logs'] != null ? List<Map<String, dynamic>>.from(data['logs']) : [],
+      jobs: data['jobs'] != null ? (data['jobs'] as List).map((j) => ScrapedJob.fromMap(Map<String, dynamic>.from(j))).toList() : [],
       createdAt: data['created_at'] != null ? (data['created_at'] as Timestamp).toDate() : null,
     );
   }

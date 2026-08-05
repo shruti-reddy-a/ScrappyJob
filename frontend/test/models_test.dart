@@ -66,6 +66,13 @@ void main() {
         'run_date': '2023-01-01',
         'total_found': 42,
         'status': 'SUCCESS',
+        'jobs': [
+          {
+            'Job Title': 'Engineer',
+            'Company': 'TechCorp',
+            'Application Link': 'https://example.com'
+          }
+        ]
       };
 
       final jobRun = JobRun.fromMap(data, 'run123');
@@ -77,6 +84,8 @@ void main() {
       expect(jobRun.runDate, '2023-01-01');
       expect(jobRun.totalFound, 42);
       expect(jobRun.status, 'SUCCESS');
+      expect(jobRun.jobs.length, 1);
+      expect(jobRun.jobs.first.jobTitle, 'Engineer');
     });
   });
 

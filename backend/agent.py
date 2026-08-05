@@ -62,7 +62,7 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     progress_doc = db.collection("run_progress").document(doc_id).get()
     if progress_doc.exists and progress_doc.to_dict().get("status") == "CANCELLED":
         logger.log("Job was cancelled. Skipping reporting.")
-        _update_job_run(job_run_ref, len(all_jobs), "CANCELLED", logger)
+        _update_job_run(job_run_ref, len(all_jobs), "CANCELLED", logger, jobs=all_jobs)
         return
 
     # 2. Excel Generation
@@ -92,15 +92,18 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
         
     # 4. Save Final Status
     logger.log(f"Job completed successfully. Total jobs found: {len(all_jobs)}")
-    _update_job_run(job_run_ref, len(all_jobs), "SUCCESS", logger)
+    _update_job_run(job_run_ref, len(all_jobs), "SUCCESS", logger, jobs=all_jobs)
 
 
-def _update_job_run(job_run_ref, total_found: int, status: str, logger: JobLogger):
-    job_run_ref.update({
+def _update_job_run(job_run_ref, total_found: int, status: str, logger: JobLogger, jobs: list = None):
+    data = {
         "total_found": total_found,
         "status": status,
         "logs": logger.logs
-    })
+    }
+    if jobs is not None:
+        data["jobs"] = jobs
+    job_run_ref.update(data)
 
 
 def main(job_id: str = None):

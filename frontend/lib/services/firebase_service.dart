@@ -219,6 +219,18 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
+  Future<void> toggleJobApplied(String runId, List<ScrapedJob> jobs, int jobIndex, bool isApplied) async {
+    if (_user == null) return;
+    try {
+      jobs[jobIndex].isApplied = isApplied;
+      await _firestore.collection('job_runs').doc(runId).update({
+        'jobs': jobs.map((j) => j.toMap()).toList(),
+      });
+    } catch (e) {
+      debugPrint("Error toggling job applied: $e");
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
