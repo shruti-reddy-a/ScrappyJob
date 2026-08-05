@@ -73,59 +73,199 @@ class _ActivePlatformsViewState extends State<ActivePlatformsView> {
     final platforms = service.atsPlatforms;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Active Platforms'),
+        title: const Text('Manage ATS Platforms', style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: AppColors.surface,
+        elevation: 0,
+        centerTitle: true,
       ),
-      body: platforms.isEmpty
-          ? const Center(child: Text('No platforms found.'))
-          : ListView.separated(
-              padding: const EdgeInsets.all(24),
-              itemCount: platforms.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final plat = platforms[index];
-                return Card(
-                  elevation: 0,
-                  color: AppColors.surfaceContainerLowest,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    title: Text(plat.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    subtitle: Text(plat.domain, style: const TextStyle(color: AppColors.outline)),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Switch(
-                          value: plat.isEnabled,
-                          onChanged: (val) {
-                            service.toggleAtsPlatform(plat.id, val);
-                          },
-                          activeTrackColor: AppColors.secondary,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: AppColors.outline),
-                          onPressed: () => _showAddPlatformDialog(context, existingPlatform: plat),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.redAccent),
-                          onPressed: () => service.deleteAtsPlatform(plat.id),
-                        ),
-                      ],
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Active Platforms',
+                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Enable or disable platforms to control where the AI scraper searches for jobs.',
+                            style: TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddPlatformDialog(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Platform'),
-        backgroundColor: AppColors.secondary,
-        foregroundColor: AppColors.onSecondary,
+                    const SizedBox(width: 16),
+                    FilledButton.icon(
+                      onPressed: () => _showAddPlatformDialog(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add Custom Platform'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: platforms.isEmpty
+                    ? const Center(
+                        child: Text('No platforms found. Add one to get started!',
+                            style: TextStyle(color: AppColors.outline, fontSize: 16)))
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        itemCount: platforms.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final plat = platforms[index];
+                          final isEnabled = plat.isEnabled;
+                          final initial = plat.name.isNotEmpty ? plat.name[0].toUpperCase() : '?';
+
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            decoration: BoxDecoration(
+                              color: isEnabled ? AppColors.surfaceContainerLowest : AppColors.surfaceContainerHigh.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isEnabled ? AppColors.primary.withValues(alpha: 0.2) : AppColors.outlineVariant.withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
+                              boxShadow: isEnabled
+                                  ? [
+                                      BoxShadow(
+                                        color: AppColors.primary.withValues(alpha: 0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      )
+                                    ]
+                                  : [],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => service.toggleAtsPlatform(plat.id, !isEnabled),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: isEnabled ? AppColors.secondaryContainer : AppColors.outlineVariant,
+                                        foregroundColor: isEnabled ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
+                                        radius: 24,
+                                        child: Text(initial, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              plat.name,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                                color: isEnabled ? AppColors.onSurface : AppColors.onSurfaceVariant,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              plat.domain,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: isEnabled ? AppColors.onSurfaceVariant : AppColors.outline,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: isEnabled ? AppColors.secondaryContainer.withValues(alpha: 0.5) : AppColors.surfaceContainerHigh,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          isEnabled ? 'Active' : 'Disabled',
+                                          style: TextStyle(
+                                            color: isEnabled ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Switch(
+                                        value: isEnabled,
+                                        onChanged: (val) {
+                                          service.toggleAtsPlatform(plat.id, val);
+                                        },
+                                        activeThumbColor: AppColors.onPrimary,
+                                        activeTrackColor: AppColors.primary,
+                                        inactiveThumbColor: AppColors.outline,
+                                        inactiveTrackColor: AppColors.surfaceContainerHigh,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      PopupMenuButton<String>(
+                                        icon: const Icon(Icons.more_vert, color: AppColors.outline),
+                                        tooltip: 'Platform Options',
+                                        onSelected: (value) {
+                                          if (value == 'edit') {
+                                            _showAddPlatformDialog(context, existingPlatform: plat);
+                                          } else if (value == 'delete') {
+                                            service.deleteAtsPlatform(plat.id);
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          const PopupMenuItem(
+                                            value: 'edit',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.edit, size: 20, color: AppColors.onSurfaceVariant),
+                                                SizedBox(width: 12),
+                                                Text('Edit Platform'),
+                                              ],
+                                            ),
+                                          ),
+                                          const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.delete, size: 20, color: Colors.redAccent),
+                                                SizedBox(width: 12),
+                                                Text('Delete', style: TextStyle(color: Colors.redAccent)),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
