@@ -12,16 +12,21 @@ class FirebaseService extends ChangeNotifier {
 
   User? _user;
   List<JobConfig> _jobs = [];
+  Map<String, dynamic> _userSettings = {};
   List<JobRun> _jobRuns = [];
   List<AtsPlatform> _atsPlatforms = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   User? get user => _user;
   List<JobConfig> get jobs => _jobs;
+  Map<String, dynamic> get userSettings => _userSettings;
   List<JobRun> get jobRuns => _jobRuns;
   List<AtsPlatform> get atsPlatforms => _atsPlatforms;
   List<AtsPlatform> get activeAtsPlatforms => _atsPlatforms.where((p) => p.isEnabled).toList();
   bool get isLoading => _isLoading;
+  
+  RunProgress? _activeProgress;
+  RunProgress? get activeProgress => _activeProgress;
 
   FirebaseService() {
     if (!kIsWeb) {
@@ -33,6 +38,7 @@ class FirebaseService extends ChangeNotifier {
         _fetchJobs();
         _fetchJobRuns();
         _fetchAtsPlatforms();
+        _fetchUserSettings();
         _listenToGlobalProgress();
       } else {
         _jobs = [];
@@ -127,6 +133,30 @@ class FirebaseService extends ChangeNotifier {
       await _auth.signOut();
     } catch (e) {
       debugPrint("Error signing out: $e");
+    }
+  }
+
+  Future<void> _fetchUserSettings() async {
+    if (_user == null) return;
+    try {
+      final doc = await _firestore.collection('user_settings').doc(_user!.uid).get();
+      if (doc.exists) {
+        _userSettings = doc.data() ?? {};
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error fetching user settings: $e');
+    }
+  }
+
+  Future<void> saveUserSettings(Map<String, dynamic> settings) async {
+    if (_user == null) return;
+    try {
+      await _firestore.collection('user_settings').doc(_user!.uid).set(settings, SetOptions(merge: true));
+      _userSettings.addAll(settings);
+      notifyListeners();
+    } catch (e) {
+      print('Error saving user settings: $e');
     }
   }
 
@@ -283,8 +313,7 @@ class FirebaseService extends ChangeNotifier {
     }
   }
 
-  RunProgress? _activeProgress;
-  RunProgress? get activeProgress => _activeProgress;
+
   void setActiveJobId(String? jobId) {
     if (jobId != null) {
       _listenToProgress(jobId);

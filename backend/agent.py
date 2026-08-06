@@ -58,7 +58,20 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     
     # 1. Scrape
     logger.log("Starting scraping phase...")
-    all_jobs = scrape_jobs(config, firecrawl, db, user_id, doc_id, job_run_id, logger)
+    # Fetch user settings for API keys and feature flags
+    user_settings = db.collection("user_settings").document(user_id).get().to_dict() or {}
+    use_custom_crawler = user_settings.get("use_custom_crawler", False)
+    
+    if use_custom_crawler:
+        from services.custom_crawler import CustomScraperClient
+        gemini_api_key = user_settings.get("gemini_api_key")
+        crawler_client = CustomScraperClient(gemini_api_key=gemini_api_key)
+        logger.log("Using Custom Scraper Engine with Playwright & Gemini.")
+    else:
+        crawler_client = firecrawl
+        logger.log("Using Firecrawl SDK.")
+
+    all_jobs = scrape_jobs(config, crawler_client, db, user_id, doc_id, job_run_id, logger)
     
     # Check if we got cancelled
     progress_doc = db.collection("run_progress").document(doc_id).get()

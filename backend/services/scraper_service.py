@@ -1,11 +1,12 @@
 import time
 from typing import List, Dict, Any
 from firebase_admin import firestore
-from firecrawl import FirecrawlApp
+from bs4 import BeautifulSoup
+from services.custom_crawler import CustomScraperClient
 from config.settings import ats_domains, max_retries
 
 def scrape_jobs(
-    config: Dict[str, Any], firecrawl: FirecrawlApp, db, user_id: str, job_id: str, job_run_id: str, logger
+    config: Dict[str, Any], firecrawl: Any, db, user_id: str, job_id: str, job_run_id: str, logger
 ) -> List[Dict[str, Any]]:
     job_titles = config.get("job_titles", [])
     locations = config.get("locations", [])

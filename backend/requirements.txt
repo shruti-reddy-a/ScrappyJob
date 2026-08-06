@@ -4,3 +4,10 @@ pandas
 openpyxl
 google-api-python-client
 python-dotenv
+playwright
+playwright-stealth
+beautifulsoup4
+markdownify
+instructor
+google-genai
+duckduckgo-search
