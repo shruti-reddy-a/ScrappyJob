@@ -4,7 +4,6 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 from firebase_admin import firestore
-from firecrawl import FirecrawlApp
 
 # Import modular services
 from services.db_service import initialize_firebase, should_run_job
@@ -19,8 +18,7 @@ load_dotenv()
 # Initialize Firebase
 db = initialize_firebase()
 
-# Initialize Firecrawl SDK
-firecrawl = FirecrawlApp(api_key=os.getenv("FIRECRAWL_API_KEY"))
+# No Firecrawl API key required
 
 # Initialize Google Drive SDK
 drive_service = None
@@ -58,18 +56,9 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     
     # 1. Scrape
     logger.log("Starting scraping phase...")
-    # Fetch user settings for API keys and feature flags
-    user_settings = db.collection("user_settings").document(user_id).get().to_dict() or {}
-    ui_custom_crawler = user_settings.get("use_custom_crawler")
-    use_custom_crawler = ui_custom_crawler if ui_custom_crawler is not None else (os.getenv("USE_CUSTOM_CRAWLER", "false").lower() == "true")
-    
-    if use_custom_crawler:
-        from services.custom_crawler import CustomScraperClient
-        crawler_client = CustomScraperClient()
-        logger.log("Using Custom Crawler (JobSpy Aggregator).")
-    else:
-        crawler_client = firecrawl
-        logger.log("Using Firecrawl SDK.")
+    logger.log("Using JobSpy Aggregator.")
+    from services.custom_crawler import CustomScraperClient
+    crawler_client = CustomScraperClient()
 
     all_jobs = scrape_jobs(config, crawler_client, db, user_id, doc_id, job_run_id, logger)
     

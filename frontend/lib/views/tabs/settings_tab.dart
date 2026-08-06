@@ -11,7 +11,6 @@ class SettingsTab extends StatefulWidget {
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  bool _useCustomCrawler = false;
   bool _isSaving = false;
 
   @override
@@ -23,19 +22,13 @@ class _SettingsTabState extends State<SettingsTab> {
   }
 
   void _loadSettings() {
-    final firebaseService = context.read<FirebaseService>();
-    final settings = firebaseService.userSettings;
-    setState(() {
-      _useCustomCrawler = settings['use_custom_crawler'] ?? false;
-    });
+    // Left empty for future settings, no custom crawler setting needed anymore
   }
 
   Future<void> _saveSettings() async {
     setState(() => _isSaving = true);
     final firebaseService = context.read<FirebaseService>();
-    await firebaseService.saveUserSettings({
-      'use_custom_crawler': _useCustomCrawler,
-    });
+    // No settings to save right now
     setState(() => _isSaving = false);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,42 +87,7 @@ class _SettingsTabState extends State<SettingsTab> {
           ),
           const SizedBox(height: 24),
 
-          Card(
-            elevation: 0,
-            color: AppColors.surfaceContainerLowest,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Scraper Engine Configurations', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-                  const SizedBox(height: 16),
-                  
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Use Custom Crawler (Playwright + Gemini)', style: TextStyle(fontWeight: FontWeight.w600)),
-                    subtitle: const Text('If disabled, the scraper will fall back to using Firecrawl SDK.'),
-                    value: _useCustomCrawler,
-                    onChanged: (val) {
-                      setState(() {
-                        _useCustomCrawler = val;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  if (_useCustomCrawler) ...[
-                    const SizedBox(height: 8),
-                    const Text('Gemini API Key is securely loaded from the backend .env file.', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                  ]
-                ],
-              ),
-            ),
-          )
+          // End of Settings List
         ],
       ),
     );
