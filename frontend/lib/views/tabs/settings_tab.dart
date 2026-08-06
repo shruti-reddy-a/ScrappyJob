@@ -11,7 +11,6 @@ class SettingsTab extends StatefulWidget {
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  final TextEditingController _geminiKeyController = TextEditingController();
   bool _useCustomCrawler = false;
   bool _isSaving = false;
 
@@ -28,7 +27,6 @@ class _SettingsTabState extends State<SettingsTab> {
     final settings = firebaseService.userSettings;
     setState(() {
       _useCustomCrawler = settings['use_custom_crawler'] ?? false;
-      _geminiKeyController.text = settings['gemini_api_key'] ?? '';
     });
   }
 
@@ -37,7 +35,6 @@ class _SettingsTabState extends State<SettingsTab> {
     final firebaseService = context.read<FirebaseService>();
     await firebaseService.saveUserSettings({
       'use_custom_crawler': _useCustomCrawler,
-      'gemini_api_key': _geminiKeyController.text.trim(),
     });
     setState(() => _isSaving = false);
     if (mounted) {
@@ -126,18 +123,8 @@ class _SettingsTabState extends State<SettingsTab> {
                   const SizedBox(height: 16),
                   
                   if (_useCustomCrawler) ...[
-                    TextFormField(
-                      controller: _geminiKeyController,
-                      decoration: InputDecoration(
-                        labelText: 'Gemini API Key',
-                        hintText: 'AIzaSy...',
-                        prefixIcon: const Icon(Icons.key),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      obscureText: true,
-                    ),
                     const SizedBox(height: 8),
-                    const Text('Your key will be securely saved to Firestore and used by the backend agent for LLM extraction.', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                    const Text('Gemini API Key is securely loaded from the backend .env file.', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
                   ]
                 ],
               ),

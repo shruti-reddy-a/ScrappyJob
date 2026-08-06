@@ -11,6 +11,13 @@ class ConfigTab extends StatelessWidget {
   const ConfigTab({super.key, required this.onRunStarted});
 
   void _showConfigModal(BuildContext context, {JobConfig? job}) {
+    if (job != null) {
+      print("Debugging job: ${job.id}");
+      print("jobTitles: ${job.jobTitles}");
+      print("locations: ${job.locations}");
+      print("targetAts: ${job.targetAts}");
+      print("targetUrls: ${job.targetUrls}");
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

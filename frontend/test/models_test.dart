@@ -29,6 +29,24 @@ void main() {
       expect(job.scrapeFrequency, 'Daily');
       expect(job.targetEmail, 'test@example.com');
       expect(job.isActive, true);
+      // Ensure missing target_urls falls back to empty list safely
+      expect(job.targetUrls, []);
+    });
+
+    test('JobConfig.fromMap safely parses missing list fields', () {
+      final data = {
+        'user_id': 'user123',
+        'job_label': 'Senior PM Job',
+        // Deliberately missing job_titles, locations, target_ats, target_urls
+      };
+
+      final job = JobConfig.fromMap(data, 'doc123');
+
+      expect(job.id, 'doc123');
+      expect(job.jobTitles, []);
+      expect(job.locations, []);
+      expect(job.targetAts, []);
+      expect(job.targetUrls, []);
     });
 
     test('JobConfig.toMap correctly serializes data', () {

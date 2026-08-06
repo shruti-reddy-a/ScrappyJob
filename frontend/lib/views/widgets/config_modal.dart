@@ -18,6 +18,7 @@ class _ConfigModalState extends State<ConfigModal> {
   late TextEditingController _jobLabelCtrl;
   late TextEditingController _jobTitlesCtrl;
   late TextEditingController _locationsCtrl;
+  late TextEditingController _targetUrlsCtrl;
   late TextEditingController _emailCtrl;
   
   String _selectedFrequency = 'Every 4 Hours';
@@ -33,6 +34,7 @@ class _ConfigModalState extends State<ConfigModal> {
     _jobLabelCtrl = TextEditingController(text: widget.job?.jobLabel ?? 'My Scraper Job');
     _jobTitlesCtrl = TextEditingController(text: widget.job?.jobTitles.join(', ') ?? 'Product manager, senior product manager');
     _locationsCtrl = TextEditingController(text: widget.job?.locations.join(', ') ?? 'SF Bay area, CA, USA');
+    _targetUrlsCtrl = TextEditingController(text: widget.job?.targetUrls.join(', ') ?? '');
     _emailCtrl = TextEditingController(text: widget.job?.targetEmail ?? '');
     if (widget.job != null) {
       _selectedFrequency = widget.job!.scrapeFrequency;
@@ -48,6 +50,7 @@ class _ConfigModalState extends State<ConfigModal> {
     _jobLabelCtrl.dispose();
     _jobTitlesCtrl.dispose();
     _locationsCtrl.dispose();
+    _targetUrlsCtrl.dispose();
     _emailCtrl.dispose();
     super.dispose();
   }
@@ -63,6 +66,7 @@ class _ConfigModalState extends State<ConfigModal> {
         jobLabel: _jobLabelCtrl.text.trim(),
         jobTitles: _jobTitlesCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         locations: _locationsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        targetUrls: _targetUrlsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         targetAts: _selectedAts,
         scrapeFrequency: _selectedFrequency,
         timeframe: _selectedTimeframe,
@@ -158,6 +162,16 @@ class _ConfigModalState extends State<ConfigModal> {
                 validator: (val) => val == null || val.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
+              TextFormField(
+                controller: _targetUrlsCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Target Company ATS URLs (optional, comma-separated)',
+                  hintText: 'e.g., https://boards.greenhouse.io/figma',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
+                ),
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -202,8 +216,28 @@ class _ConfigModalState extends State<ConfigModal> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 24),
-              const Text('Target ATS Platforms', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSurface)),
-              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Target ATS Platforms', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSurface)),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_selectedAts.length == availableAts.length) {
+                          _selectedAts.clear();
+                        } else {
+                          _selectedAts = List.from(availableAts);
+                        }
+                      });
+                    },
+                    child: Text(
+                      _selectedAts.length == availableAts.length ? 'Deselect All' : 'Select All',
+                      style: const TextStyle(color: AppColors.primary),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 8.0,

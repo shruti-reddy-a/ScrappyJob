@@ -23,7 +23,10 @@ jobs:
 
     - name: Install Dependencies
       working-directory: ./backend
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+        playwright install chromium
+        playwright install-deps
 
     - name: Run Scraping Agent
       working-directory: ./backend
@@ -33,4 +36,6 @@ jobs:
         FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        USE_CUSTOM_CRAWLER: ${{ secrets.USE_CUSTOM_CRAWLER }}
       run: python agent.py

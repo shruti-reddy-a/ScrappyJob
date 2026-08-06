@@ -11,3 +11,4 @@ markdownify
 instructor
 google-genai
 duckduckgo-search
+python-jobspy

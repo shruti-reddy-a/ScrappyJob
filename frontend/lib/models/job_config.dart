@@ -7,6 +7,7 @@ class JobConfig {
   List<String> jobTitles;
   List<String> locations;
   List<String> targetAts;
+  List<String> targetUrls;
   String timeframe;
   String scrapeFrequency;
   String targetEmail;
@@ -21,6 +22,7 @@ class JobConfig {
     this.jobTitles = const ["Product Manager", "AI Product Manager", "Senior Product Manager"],
     this.locations = const ["San Francisco Bay Area", "California, USA"],
     this.targetAts = const ["Greenhouse", "Ashby", "Workday", "iCIMS", "Lever", "BambooHR", "Workable", "LinkedIn", "Indeed"],
+    this.targetUrls = const [],
     this.timeframe = "Past 24 Hours",
     this.scrapeFrequency = "Every 4 Hours",
     this.targetEmail = "",
@@ -34,9 +36,10 @@ class JobConfig {
       id: documentId,
       userId: data['user_id'] ?? '',
       jobLabel: data['job_label'] ?? 'My Scraper Job',
-      jobTitles: List<String>.from(data['job_titles'] ?? []),
-      locations: List<String>.from(data['locations'] ?? []),
-      targetAts: List<String>.from(data['target_ats'] ?? []),
+      jobTitles: (data['job_titles'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      locations: (data['locations'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      targetAts: (data['target_ats'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      targetUrls: (data['target_urls'] as List?)?.map((e) => e.toString()).toList() ?? [],
       timeframe: data['timeframe'] ?? "Past 24 Hours",
       scrapeFrequency: data['scrape_frequency'] ?? "Every 4 Hours",
       targetEmail: data['target_email'] ?? "",
@@ -53,6 +56,7 @@ class JobConfig {
       'job_titles': jobTitles,
       'locations': locations,
       'target_ats': targetAts,
+      'target_urls': targetUrls,
       'timeframe': timeframe,
       'scrape_frequency': scrapeFrequency,
       'target_email': targetEmail,
@@ -157,7 +161,7 @@ class JobRun {
       id: documentId,
       configId: data['config_id'] ?? '',
       userId: data['user_id'] ?? '',
-      jobTitles: List<String>.from(data['job_titles'] ?? []),
+      jobTitles: (data['job_titles'] as List?)?.map((e) => e.toString()).toList() ?? [],
       runDate: data['run_date'] ?? '',
       totalFound: data['total_found'] ?? 0,
       driveFolderId: data['drive_folder_id'] ?? '',

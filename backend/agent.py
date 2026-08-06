@@ -60,13 +60,13 @@ def run_job(doc_id: str, config: dict, logger: JobLogger):
     logger.log("Starting scraping phase...")
     # Fetch user settings for API keys and feature flags
     user_settings = db.collection("user_settings").document(user_id).get().to_dict() or {}
-    use_custom_crawler = user_settings.get("use_custom_crawler", False)
+    ui_custom_crawler = user_settings.get("use_custom_crawler")
+    use_custom_crawler = ui_custom_crawler if ui_custom_crawler is not None else (os.getenv("USE_CUSTOM_CRAWLER", "false").lower() == "true")
     
     if use_custom_crawler:
         from services.custom_crawler import CustomScraperClient
-        gemini_api_key = user_settings.get("gemini_api_key")
-        crawler_client = CustomScraperClient(gemini_api_key=gemini_api_key)
-        logger.log("Using Custom Scraper Engine with Playwright & Gemini.")
+        crawler_client = CustomScraperClient()
+        logger.log("Using Custom Crawler (JobSpy Aggregator).")
     else:
         crawler_client = firecrawl
         logger.log("Using Firecrawl SDK.")
