@@ -49,10 +49,14 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
     final appliedCount = service.jobRuns.fold<int>(0, (sum, run) => sum + run.jobs.where((j) => j.isApplied).length);
     final totalPlatforms = service.activeAtsPlatforms.length; 
     
-    // Check if there are active configurations, if so, assume it might be running. 
-    // We'll show the banner if there's at least one active search config.
-    final bool isCrawlerRunning = activeConfigsCount > 0;
-    final String activeConfigName = isCrawlerRunning ? service.jobs.firstWhere((j) => j.isActive).jobLabel : '';
+    // Check if there is currently a running task
+    final bool isCrawlerRunning = service.activeProgress != null && service.activeProgress!.status == 'RUNNING';
+    String activeConfigName = 'A';
+    if (isCrawlerRunning) {
+      try {
+        activeConfigName = service.jobs.firstWhere((j) => j.id == service.activeProgress!.id).jobLabel;
+      } catch (e) {}
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),

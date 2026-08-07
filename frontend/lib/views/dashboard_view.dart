@@ -5,6 +5,8 @@ import 'tabs/config_tab.dart';
 import 'tabs/jobs_tab.dart';
 import 'tabs/settings_tab.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../services/firebase_service.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -89,7 +91,7 @@ class _DashboardViewState extends State<DashboardView> {
               children: [
                 _buildNavItem(Icons.home_outlined, 'Home', 0),
                 _buildNavItem(Icons.work_outline, 'Jobs', 1),
-                _buildNavItem(Icons.search, 'Searches', 2, showDot: true),
+                _buildNavItem(Icons.search, 'Searches', 2, showDot: context.watch<FirebaseService>().activeProgress != null && context.watch<FirebaseService>().activeProgress!.status == 'RUNNING'),
                 _buildNavItem(Icons.settings_outlined, 'Settings', 3),
               ],
             ),
