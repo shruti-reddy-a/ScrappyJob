@@ -20,6 +20,11 @@ class _JobsTabState extends State<JobsTab> {
   JobFilter _currentFilter = JobFilter.all;
   final TextEditingController _searchController = TextEditingController();
 
+  String? _selectedCompany;
+  String? _selectedLocation;
+  String? _selectedSalary;
+  String? _selectedTime;
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -43,6 +48,19 @@ class _JobsTabState extends State<JobsTab> {
     var filteredJobs = allJobs.where((item) {
       if (_currentFilter == JobFilter.notApplied && item.job.isApplied) return false;
       if (_currentFilter == JobFilter.applied && !item.job.isApplied) return false;
+
+      if (_selectedCompany != null && _selectedCompany!.isNotEmpty && _selectedCompany != 'Any company') {
+        if (item.job.company != _selectedCompany) return false;
+      }
+      if (_selectedLocation != null && _selectedLocation!.isNotEmpty && _selectedLocation != 'Any location') {
+        if (item.job.location != _selectedLocation) return false;
+      }
+      if (_selectedSalary != null && _selectedSalary!.isNotEmpty && _selectedSalary != 'Any salary') {
+        if (item.job.salary != _selectedSalary) return false;
+      }
+      if (_selectedTime != null && _selectedTime!.isNotEmpty && _selectedTime != 'Any time') {
+        if (item.job.postedDate != _selectedTime) return false;
+      }
 
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
@@ -109,6 +127,28 @@ class _JobsTabState extends State<JobsTab> {
               _buildSegmentedControl(),
             ],
           ),
+          const SizedBox(height: 16),
+          
+          // Dropdown Filters Row
+          Builder(
+            builder: (context) {
+              final uniqueCompanies = allJobs.map((e) => e.job.company).where((c) => c.isNotEmpty).toSet().toList()..sort();
+              final uniqueLocations = allJobs.map((e) => e.job.location).where((l) => l.isNotEmpty).toSet().toList()..sort();
+              final uniqueSalaries = allJobs.map((e) => e.job.salary).where((s) => s != 'N/A' && s.isNotEmpty).toSet().toList()..sort();
+              final uniqueTimes = allJobs.map((e) => e.job.postedDate).where((t) => t != 'N/A' && t.isNotEmpty).toSet().toList()..sort();
+
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompany, (val) => setState(() => _selectedCompany = val)),
+                  _buildDropdownFilter('Any location', uniqueLocations, _selectedLocation, (val) => setState(() => _selectedLocation = val)),
+                  _buildDropdownFilter('Any salary', uniqueSalaries, _selectedSalary, (val) => setState(() => _selectedSalary = val)),
+                  _buildDropdownFilter('Any time', uniqueTimes, _selectedTime, (val) => setState(() => _selectedTime = val)),
+                ],
+              );
+            }
+          ),
           const SizedBox(height: 24),
 
           // Data Table
@@ -141,6 +181,38 @@ class _JobsTabState extends State<JobsTab> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDropdownFilter(String hint, List<String> options, String? selectedValue, ValueChanged<String?> onChanged) {
+    return DropdownMenu<String>(
+      hintText: hint,
+      initialSelection: selectedValue,
+      onSelected: onChanged,
+      enableSearch: true,
+      enableFilter: true,
+      width: 180,
+      menuHeight: 300,
+      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.onSurface),
+      inputDecorationTheme: InputDecorationTheme(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        constraints: const BoxConstraints(maxHeight: 40),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: AppColors.borderColor),
+        ),
+      ),
+      dropdownMenuEntries: [
+        DropdownMenuEntry<String>(value: hint, label: hint), // 'Any X' resets the filter
+        ...options.map((e) => DropdownMenuEntry<String>(value: e, label: e)),
+      ],
     );
   }
 

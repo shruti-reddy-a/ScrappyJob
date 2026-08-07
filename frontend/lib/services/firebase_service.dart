@@ -364,6 +364,7 @@ class FirebaseService extends ChangeNotifier {
       await _firestore.collection('job_runs').doc(runId).update({
         'jobs': jobs.map((j) => j.toMap()).toList(),
       });
+      notifyListeners();
     } catch (e) {
       debugPrint("Error toggling job applied: $e");
     }

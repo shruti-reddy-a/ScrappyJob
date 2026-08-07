@@ -94,16 +94,16 @@ class ScrapedJob {
 
   factory ScrapedJob.fromMap(Map<String, dynamic> data) {
     return ScrapedJob(
-      sourceAts: data['Source ATS'] ?? '',
-      jobTitle: data['Job Title'] ?? '',
-      company: data['Company'] ?? '',
-      location: data['Location'] ?? '',
-      applicationLink: data['Application Link'] ?? '',
-      postedDate: data['Posted Date'] ?? '',
-      postingTime: data['Posting Time'] ?? '',
-      salary: data['Salary'] ?? 'N/A',
-      snippetNotes: data['Snippet/Notes'] ?? '',
-      isApplied: data['isApplied'] ?? false,
+      sourceAts: data['Source ATS']?.toString() ?? '',
+      jobTitle: data['Job Title']?.toString() ?? '',
+      company: data['Company']?.toString() ?? '',
+      location: data['Location']?.toString() ?? '',
+      applicationLink: data['Application Link']?.toString() ?? '',
+      postedDate: data['Posted Date']?.toString() ?? '',
+      postingTime: data['Posting Time']?.toString() ?? '',
+      salary: data['Salary']?.toString() ?? 'N/A',
+      snippetNotes: data['Snippet/Notes']?.toString() ?? '',
+      isApplied: data['isApplied'] == true,
     );
   }
 
@@ -163,20 +163,20 @@ class JobRun {
   factory JobRun.fromMap(Map<String, dynamic> data, String documentId) {
     return JobRun(
       id: documentId,
-      configId: data['config_id'] ?? '',
-      userId: data['user_id'] ?? '',
+      configId: data['config_id']?.toString() ?? '',
+      userId: data['user_id']?.toString() ?? '',
       jobTitles: (data['job_titles'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      runDate: data['run_date'] ?? '',
+      runDate: data['run_date']?.toString() ?? '',
       totalFound: data['total_found'] ?? 0,
-      driveFolderId: data['drive_folder_id'] ?? '',
-      driveFolderUrl: data['drive_folder_url'] ?? '',
-      excelFileId: data['excel_file_id'] ?? '',
-      excelFileUrl: data['excel_file_url'] ?? '',
-      emailSent: data['email_sent'] ?? false,
-      status: data['status'] ?? '',
+      driveFolderId: data['drive_folder_id']?.toString() ?? '',
+      driveFolderUrl: data['drive_folder_url']?.toString() ?? '',
+      excelFileId: data['excel_file_id']?.toString() ?? '',
+      excelFileUrl: data['excel_file_url']?.toString() ?? '',
+      emailSent: data['email_sent'] == true,
+      status: data['status']?.toString() ?? '',
       executionTimeMs: data['execution_time_ms'] ?? 0,
       logs: data['logs'] != null ? List<Map<String, dynamic>>.from(data['logs']) : [],
-      jobs: data['jobs'] != null ? (data['jobs'] as List).map((j) => ScrapedJob.fromMap(Map<String, dynamic>.from(j))).toList() : [],
+      jobs: data['jobs'] != null ? (data['jobs'] as List).where((j) => j != null).map((j) => ScrapedJob.fromMap(Map<String, dynamic>.from(j))).toList() : [],
       createdAt: data['created_at'] != null ? (data['created_at'] as Timestamp).toDate() : null,
     );
   }
