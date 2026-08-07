@@ -71,6 +71,37 @@ class _JobsTabState extends State<JobsTab> {
     return maxSal;
   }
 
+  Duration? _parsePostedDate(String postedDate) {
+    if (postedDate == 'N/A' || postedDate.isEmpty) return null;
+    final s = postedDate.toLowerCase();
+    
+    // Check for explicit "ago" strings
+    if (s.contains('ago')) {
+      int? val = int.tryParse(s.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (val == null) return null;
+      if (s.contains('m') || s.contains('min')) return Duration(minutes: val);
+      if (s.contains('h') || s.contains('hr') || s.contains('hour')) return Duration(hours: val);
+      if (s.contains('d') || s.contains('day')) return Duration(days: val);
+      if (s.contains('w') || s.contains('week')) return Duration(days: val * 7);
+      if (s.contains('mo') || s.contains('month')) return Duration(days: val * 30);
+      if (s.contains('y') || s.contains('year')) return Duration(days: val * 365);
+    }
+    
+    // Check for "just now" or "today"
+    if (s.contains('just now') || s.contains('today')) return const Duration(minutes: 1);
+    if (s.contains('yesterday')) return const Duration(days: 1);
+    
+    // Check if it's a YYYY-MM-DD format
+    try {
+      DateTime dt = DateTime.parse(postedDate);
+      return DateTime.now().difference(dt);
+    } catch (e) {
+      // Ignored
+    }
+    
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseService = context.watch<FirebaseService>();
@@ -93,7 +124,19 @@ class _JobsTabState extends State<JobsTab> {
         if (jobSal == null || jobSal < threshold) return false;
       }
       if (_selectedTimes.isNotEmpty) {
-        if (!_selectedTimes.contains(item.job.postedDate)) return false;
+        final selectedTime = _selectedTimes.first;
+        Duration? maxDuration;
+        if (selectedTime == 'Last 3 hours') maxDuration = const Duration(hours: 3);
+        else if (selectedTime == 'Last 6 hours') maxDuration = const Duration(hours: 6);
+        else if (selectedTime == 'Last 12 hours') maxDuration = const Duration(hours: 12);
+        else if (selectedTime == 'Past 24 hours') maxDuration = const Duration(hours: 24);
+        else if (selectedTime == 'Past week') maxDuration = const Duration(days: 7);
+        else if (selectedTime == 'Past month') maxDuration = const Duration(days: 30);
+        
+        if (maxDuration != null) {
+          Duration? jobDuration = _parsePostedDate(item.job.postedDate);
+          if (jobDuration == null || jobDuration > maxDuration) return false;
+        }
       }
 
       if (_searchQuery.isNotEmpty) {
@@ -179,7 +222,15 @@ class _JobsTabState extends State<JobsTab> {
                 r'$180,000+',
                 r'$200,000+',
               ];
-              final uniqueTimes = allJobs.map((e) => e.job.postedDate).where((t) => t != 'N/A' && t.isNotEmpty).toSet().toList()..sort();
+              final timeOptions = [
+                'Any time',
+                'Last 3 hours',
+                'Last 6 hours',
+                'Last 12 hours',
+                'Past 24 hours',
+                'Past week',
+                'Past month',
+              ];
 
               return Wrap(
                 spacing: 12,
@@ -188,7 +239,15 @@ class _JobsTabState extends State<JobsTab> {
                   _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompanies, (val) => setState(() => _selectedCompanies = val)),
                   _buildDropdownFilter('Any location', uniqueLocations, _selectedLocations, (val) => setState(() => _selectedLocations = val)),
                   _buildDropdownFilter('Any salary', salaryOptions, _selectedSalaries, (val) => setState(() => _selectedSalaries = val), isMultiSelect: false, showSearch: false, secondaryButtonText: 'Cancel'),
-                  _buildDropdownFilter('Any time', uniqueTimes, _selectedTimes, (val) => setState(() => _selectedTimes = val)),
+                  _buildDropdownFilter('Any time', timeOptions, _selectedTimes, (val) {
+                    setState(() {
+                      if (val.contains('Any time')) {
+                        _selectedTimes = [];
+                      } else {
+                        _selectedTimes = val;
+                      }
+                    });
+                  }, isMultiSelect: false, showSearch: false, secondaryButtonText: 'Reset'),
                 ],
               );
             }
