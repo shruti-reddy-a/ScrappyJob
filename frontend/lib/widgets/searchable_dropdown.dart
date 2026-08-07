@@ -6,6 +6,9 @@ class SearchableDropdown extends StatefulWidget {
   final List<String> options;
   final List<String> selectedValues;
   final ValueChanged<List<String>> onApply;
+  final bool isMultiSelect;
+  final bool showSearch;
+  final String secondaryButtonText;
 
   const SearchableDropdown({
     super.key,
@@ -13,6 +16,9 @@ class SearchableDropdown extends StatefulWidget {
     required this.options,
     required this.selectedValues,
     required this.onApply,
+    this.isMultiSelect = true,
+    this.showSearch = true,
+    this.secondaryButtonText = 'Reset',
   });
 
   @override
@@ -127,36 +133,39 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                               padding: const EdgeInsets.only(left: 16, right: 8, top: 12, bottom: 8),
                               child: Row(
                                 children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _searchController,
-                                      focusNode: _searchFocusNode,
-                                      autofocus: true,
-                                      onChanged: (val) {
-                                        setOverlayState(() {
-                                          _searchQuery = val;
-                                        });
-                                      },
-                                      decoration: InputDecoration(
-                                        hintText: 'Add a ${widget.hint.toLowerCase().replaceAll("any ", "")}',
-                                        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                        isDense: true,
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(4),
-                                          borderSide: const BorderSide(color: AppColors.borderColor),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(4),
-                                          borderSide: const BorderSide(color: AppColors.borderColor),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(4),
-                                          borderSide: const BorderSide(color: Colors.blue),
+                                  if (widget.showSearch)
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _searchController,
+                                        focusNode: _searchFocusNode,
+                                        autofocus: true,
+                                        onChanged: (val) {
+                                          setOverlayState(() {
+                                            _searchQuery = val;
+                                          });
+                                        },
+                                        decoration: InputDecoration(
+                                          hintText: 'Add a ${widget.hint.toLowerCase().replaceAll("any ", "")}',
+                                          hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          isDense: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(4),
+                                            borderSide: const BorderSide(color: AppColors.borderColor),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(4),
+                                            borderSide: const BorderSide(color: AppColors.borderColor),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(4),
+                                            borderSide: const BorderSide(color: Colors.blue),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                    )
+                                  else
+                                    const Spacer(),
                                   const SizedBox(width: 8),
                                   IconButton(
                                     icon: const Icon(Icons.close, size: 20, color: AppColors.onSurfaceVariant),
@@ -181,10 +190,14 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                                   return InkWell(
                                     onTap: () {
                                       setOverlayState(() {
-                                        if (isSelected) {
-                                          _tempSelected.remove(option);
+                                        if (widget.isMultiSelect) {
+                                          if (isSelected) {
+                                            _tempSelected.remove(option);
+                                          } else {
+                                            _tempSelected.add(option);
+                                          }
                                         } else {
-                                          _tempSelected.add(option);
+                                          _tempSelected = [option];
                                         }
                                       });
                                     },
@@ -195,20 +208,34 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                                           SizedBox(
                                             width: 20,
                                             height: 20,
-                                            child: Checkbox(
-                                              value: isSelected,
-                                              onChanged: (val) {
-                                                setOverlayState(() {
-                                                  if (val == true) {
-                                                    _tempSelected.add(option);
-                                                  } else {
-                                                    _tempSelected.remove(option);
-                                                  }
-                                                });
-                                              },
-                                              activeColor: const Color(0xFF0A66C2), // LinkedIn blue for checkboxes, or use primary? Let's use primary.
-                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                            ),
+                                            child: widget.isMultiSelect 
+                                              ? Checkbox(
+                                                  value: isSelected,
+                                                  onChanged: (val) {
+                                                    setOverlayState(() {
+                                                      if (val == true) {
+                                                        _tempSelected.add(option);
+                                                      } else {
+                                                        _tempSelected.remove(option);
+                                                      }
+                                                    });
+                                                  },
+                                                  activeColor: const Color(0xFF0A66C2),
+                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                )
+                                              : Radio<String>(
+                                                  value: option,
+                                                  groupValue: _tempSelected.isNotEmpty ? _tempSelected.first : null,
+                                                  onChanged: (val) {
+                                                    if (val != null) {
+                                                      setOverlayState(() {
+                                                        _tempSelected = [val];
+                                                      });
+                                                    }
+                                                  },
+                                                  activeColor: const Color(0xFF0A66C2),
+                                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -244,7 +271,7 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                                       foregroundColor: AppColors.onSurfaceVariant,
                                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                     ),
-                                    child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w600)),
+                                    child: Text(widget.secondaryButtonText, style: const TextStyle(fontWeight: FontWeight.w600)),
                                   ),
                                   const SizedBox(width: 8),
                                   ElevatedButton(

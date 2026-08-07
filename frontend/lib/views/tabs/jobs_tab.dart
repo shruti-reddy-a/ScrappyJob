@@ -40,6 +40,37 @@ class _JobsTabState extends State<JobsTab> {
     }
   }
 
+  int? _extractAnnualSalary(String salaryStr) {
+    if (salaryStr == 'N/A' || salaryStr.isEmpty) return null;
+    bool isHourly = salaryStr.toLowerCase().contains('hour') || salaryStr.toLowerCase().contains('hr');
+    
+    String s = salaryStr.toLowerCase().replaceAll('k', '000');
+    s = s.replaceAll(RegExp(r'[^0-9\-]'), '');
+    if (s.isEmpty) return null;
+    
+    List<String> parts = s.split('-');
+    int maxSal = 0;
+    for (String part in parts) {
+      if (part.isNotEmpty) {
+        int? val = int.tryParse(part);
+        if (val != null && val > maxSal) {
+          maxSal = val;
+        }
+      }
+    }
+    
+    if (maxSal == 0) return null;
+    
+    if (isHourly && maxSal < 1000) maxSal *= 2000;
+    else if (maxSal < 1000) maxSal *= 2000; // Assume hourly if < 1000
+    
+    if (salaryStr.toLowerCase().contains('month') || salaryStr.toLowerCase().contains('mo')) {
+      if (maxSal < 20000) maxSal *= 12;
+    }
+    
+    return maxSal;
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseService = context.watch<FirebaseService>();
@@ -57,7 +88,9 @@ class _JobsTabState extends State<JobsTab> {
         if (!_selectedLocations.contains(item.job.location)) return false;
       }
       if (_selectedSalaries.isNotEmpty) {
-        if (!_selectedSalaries.contains(item.job.salary)) return false;
+        int threshold = int.parse(_selectedSalaries.first.replaceAll(RegExp(r'[^0-9]'), ''));
+        int? jobSal = _extractAnnualSalary(item.job.salary);
+        if (jobSal == null || jobSal < threshold) return false;
       }
       if (_selectedTimes.isNotEmpty) {
         if (!_selectedTimes.contains(item.job.postedDate)) return false;
@@ -135,7 +168,17 @@ class _JobsTabState extends State<JobsTab> {
             builder: (context) {
               final uniqueCompanies = allJobs.map((e) => e.job.company).where((c) => c.isNotEmpty).toSet().toList()..sort();
               final uniqueLocations = allJobs.map((e) => e.job.location).where((l) => l.isNotEmpty).toSet().toList()..sort();
-              final uniqueSalaries = allJobs.map((e) => e.job.salary).where((s) => s != 'N/A' && s.isNotEmpty).toSet().toList()..sort();
+              final salaryOptions = [
+                r'$40,000+',
+                r'$60,000+',
+                r'$80,000+',
+                r'$100,000+',
+                r'$120,000+',
+                r'$140,000+',
+                r'$160,000+',
+                r'$180,000+',
+                r'$200,000+',
+              ];
               final uniqueTimes = allJobs.map((e) => e.job.postedDate).where((t) => t != 'N/A' && t.isNotEmpty).toSet().toList()..sort();
 
               return Wrap(
@@ -144,7 +187,7 @@ class _JobsTabState extends State<JobsTab> {
                 children: [
                   _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompanies, (val) => setState(() => _selectedCompanies = val)),
                   _buildDropdownFilter('Any location', uniqueLocations, _selectedLocations, (val) => setState(() => _selectedLocations = val)),
-                  _buildDropdownFilter('Any salary', uniqueSalaries, _selectedSalaries, (val) => setState(() => _selectedSalaries = val)),
+                  _buildDropdownFilter('Any salary', salaryOptions, _selectedSalaries, (val) => setState(() => _selectedSalaries = val), isMultiSelect: false, showSearch: false, secondaryButtonText: 'Cancel'),
                   _buildDropdownFilter('Any time', uniqueTimes, _selectedTimes, (val) => setState(() => _selectedTimes = val)),
                 ],
               );
@@ -185,12 +228,15 @@ class _JobsTabState extends State<JobsTab> {
     );
   }
 
-  Widget _buildDropdownFilter(String hint, List<String> options, List<String> selectedValues, ValueChanged<List<String>> onChanged) {
+  Widget _buildDropdownFilter(String hint, List<String> options, List<String> selectedValues, ValueChanged<List<String>> onChanged, {bool isMultiSelect = true, bool showSearch = true, String secondaryButtonText = 'Reset'}) {
     return SearchableDropdown(
       hint: hint,
       options: options,
       selectedValues: selectedValues,
       onApply: onChanged,
+      isMultiSelect: isMultiSelect,
+      showSearch: showSearch,
+      secondaryButtonText: secondaryButtonText,
     );
   }
 
