@@ -6,7 +6,7 @@ import '../../constants/app_colors.dart';
 import '../pages/active_configurations_view.dart';
 import '../pages/execution_history_view.dart';
 import '../pages/active_platforms_view.dart';
-import '../../models/job_run.dart';
+import '../../models/job_config.dart';
 
 class DashboardTab extends StatefulWidget {
   const DashboardTab({super.key});
@@ -50,7 +50,7 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
     // Check if there are active configurations, if so, assume it might be running. 
     // We'll show the banner if there's at least one active search config.
     final bool isCrawlerRunning = activeConfigsCount > 0;
-    final String activeConfigName = isCrawlerRunning ? service.jobs.firstWhere((j) => j.isActive).name : '';
+    final String activeConfigName = isCrawlerRunning ? service.jobs.firstWhere((j) => j.isActive).jobLabel : '';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
