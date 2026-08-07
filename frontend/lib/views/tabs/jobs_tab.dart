@@ -102,6 +102,32 @@ class _JobsTabState extends State<JobsTab> {
     return null;
   }
 
+  String _getFormattedPostedDate(String postedDate, String postingTime) {
+    if (postedDate.isEmpty || postedDate == 'N/A') return 'N/A';
+    Duration? d = _parsePostedDate(postedDate);
+    
+    // If we couldn't parse it, just return it as is
+    if (d == null) {
+      if (postingTime != 'N/A' && postingTime.isNotEmpty) {
+        return '$postedDate\n$postingTime';
+      }
+      return postedDate;
+    }
+    
+    // Format based on rules
+    if (d.inSeconds < 60) {
+      return '${d.inSeconds < 0 ? 0 : d.inSeconds}s ago';
+    } else if (d.inMinutes < 60) {
+      return '${d.inMinutes}m ago';
+    } else if (d.inHours < 24) {
+      return '${d.inHours}h ago';
+    } else if (d.inDays < 7) {
+      return '${d.inDays}d ago';
+    } else {
+      return '${d.inDays ~/ 7}w ago';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final firebaseService = context.watch<FirebaseService>();
@@ -424,9 +450,7 @@ class _JobsTabState extends State<JobsTab> {
           Expanded(
             flex: 1,
             child: Text(
-              item.job.postedDate.isNotEmpty 
-                ? (item.job.postingTime != 'N/A' && item.job.postingTime.isNotEmpty ? '${item.job.postedDate}\n${item.job.postingTime}' : item.job.postedDate) 
-                : 'N/A',
+              _getFormattedPostedDate(item.job.postedDate, item.job.postingTime),
               style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
           ),
