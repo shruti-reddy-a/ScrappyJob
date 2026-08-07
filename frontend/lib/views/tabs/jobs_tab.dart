@@ -444,7 +444,7 @@ class _JobsTabState extends State<JobsTab> {
           Expanded(
             flex: 2,
             child: Text(
-              item.job.salary.isNotEmpty ? item.job.salary : 'N/A',
+              item.job.salary.isNotEmpty ? item.job.salary.replaceAll('.0 ', ' ').replaceAll('.0', '') : 'N/A',
               style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
             ),
           ),
