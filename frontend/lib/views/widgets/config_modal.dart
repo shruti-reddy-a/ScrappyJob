@@ -22,12 +22,12 @@ class _ConfigModalState extends State<ConfigModal> {
   late TextEditingController _targetUrlsCtrl;
   late TextEditingController _emailCtrl;
   
-  String _selectedFrequency = 'Every 4 hours';
-  String _selectedTimeframe = 'Past 24 hours';
+  String _selectedFrequency = 'Every 4 Hours';
+  String _selectedTimeframe = 'Past 24 Hours';
   List<String> _selectedAts = [];
 
-  final List<String> _frequencyOptions = ['Now', 'Every 4 hours', 'Every 6 hours', 'Every 12 hours', 'Daily'];
-  final List<String> _timeframeOptions = ['Past 12 hours', 'Past 24 hours', 'Past 48 hours', 'Past 7 days'];
+  final List<String> _frequencyOptions = ['Now', 'Every 4 Hours', 'Every 6 Hours', 'Every 12 Hours', 'Daily'];
+  final List<String> _timeframeOptions = ['Past 12 Hours', 'Past 24 Hours', 'Past 48 Hours', 'Past 7 Days'];
 
   @override
   void initState() {
@@ -47,8 +47,12 @@ class _ConfigModalState extends State<ConfigModal> {
     _emailCtrl = TextEditingController(text: widget.job?.targetEmail ?? '');
     
     if (widget.job != null) {
-      _selectedFrequency = widget.job!.scrapeFrequency;
-      _selectedTimeframe = widget.job!.timeframe;
+      _selectedFrequency = _frequencyOptions.contains(widget.job!.scrapeFrequency) 
+          ? widget.job!.scrapeFrequency 
+          : 'Every 4 Hours';
+      _selectedTimeframe = _timeframeOptions.contains(widget.job!.timeframe)
+          ? widget.job!.timeframe
+          : 'Past 24 Hours';
       _selectedAts = List.from(widget.job!.targetAts);
     } else {
       // Select all by default for a new search
