@@ -81,12 +81,32 @@ class CustomScraperClient:
                     # If urls list is empty or we matched, include it.
                     if not urls or is_match:
                         date_posted = row.get("date_posted", None)
-                        if date_posted and hasattr(date_posted, "strftime"):
-                            posted_date_str = date_posted.strftime("%Y-%m-%d")
-                            iso_dt = date_posted.strftime("%Y-%m-%dT00:00:00")
-                        else:
-                            posted_date_str = str(date_posted) if date_posted else "N/A"
-                            iso_dt = ""
+                        posted_date_str = "N/A"
+                        posting_time_str = "N/A"
+                        iso_dt = ""
+                        
+                        if date_posted:
+                            if hasattr(date_posted, "strftime"):
+                                posted_date_str = date_posted.strftime("%Y-%m-%d")
+                                if hasattr(date_posted, "hour") and (date_posted.hour != 0 or date_posted.minute != 0):
+                                    posting_time_str = date_posted.strftime("%H:%M:%S")
+                                iso_dt = date_posted.strftime("%Y-%m-%dT%H:%M:%S")
+                            else:
+                                posted_date_str = str(date_posted)
+                                iso_dt = posted_date_str
+                        
+                        # Parse Salary
+                        min_amt = row.get("min_amount")
+                        max_amt = row.get("max_amount")
+                        currency = row.get("currency", "")
+                        interval = row.get("interval", "")
+                        salary_str = "N/A"
+                        
+                        if min_amt and not (isinstance(min_amt, float) and __import__("math").isnan(min_amt)):
+                            if max_amt and not (isinstance(max_amt, float) and __import__("math").isnan(max_amt)):
+                                salary_str = f"{currency}{min_amt} - {currency}{max_amt} / {interval}".strip()
+                            else:
+                                salary_str = f"{currency}{min_amt} / {interval}".strip()
                         
                         all_jobs.append({
                             "job_title": str(row.get("title", "N/A")),
@@ -94,7 +114,8 @@ class CustomScraperClient:
                             "location": str(row.get("location", "N/A")),
                             "application_link": job_url_direct if job_url_direct != "nan" and job_url_direct else job_url,
                             "posted_date": posted_date_str,
-                            "posting_time": "N/A",
+                            "posting_time": posting_time_str,
+                            "salary": salary_str,
                             "posted_iso_datetime": iso_dt,
                             "snippet": str(row.get("description", ""))[:200]
                         })

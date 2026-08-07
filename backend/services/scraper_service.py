@@ -111,6 +111,7 @@ def scrape_jobs(
                         "Application Link": url,
                         "Posted Date": job.get("posted_date", "N/A"),
                         "Posting Time": job.get("posting_time", "N/A"),
+                        "Salary": job.get("salary", "N/A"),
                         "_iso_dt": job.get("posted_iso_datetime", ""),
                         "Snippet/Notes": job.get("snippet", ""),
                     })

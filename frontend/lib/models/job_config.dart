@@ -75,6 +75,7 @@ class ScrapedJob {
   String applicationLink;
   String postedDate;
   String postingTime;
+  String salary;
   String snippetNotes;
   bool isApplied;
 
@@ -86,6 +87,7 @@ class ScrapedJob {
     required this.applicationLink,
     required this.postedDate,
     required this.postingTime,
+    this.salary = 'N/A',
     required this.snippetNotes,
     this.isApplied = false,
   });
@@ -99,6 +101,7 @@ class ScrapedJob {
       applicationLink: data['Application Link'] ?? '',
       postedDate: data['Posted Date'] ?? '',
       postingTime: data['Posting Time'] ?? '',
+      salary: data['Salary'] ?? 'N/A',
       snippetNotes: data['Snippet/Notes'] ?? '',
       isApplied: data['isApplied'] ?? false,
     );
@@ -113,6 +116,7 @@ class ScrapedJob {
       'Application Link': applicationLink,
       'Posted Date': postedDate,
       'Posting Time': postingTime,
+      'Salary': salary,
       'Snippet/Notes': snippetNotes,
       'isApplied': isApplied,
     };

@@ -261,15 +261,17 @@ class _JobsTabState extends State<JobsTab> {
           ),
           Expanded(
             flex: 2,
-            child: const Text(
-              'N/A', // Salary not yet supported natively
-              style: TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
+            child: Text(
+              item.job.salary.isNotEmpty ? item.job.salary : 'N/A',
+              style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
             ),
           ),
           Expanded(
             flex: 1,
             child: Text(
-              item.job.postedDate.isNotEmpty ? item.job.postedDate : 'N/A',
+              item.job.postedDate.isNotEmpty 
+                ? (item.job.postingTime != 'N/A' && item.job.postingTime.isNotEmpty ? '${item.job.postedDate}\n${item.job.postingTime}' : item.job.postedDate) 
+                : 'N/A',
               style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
           ),
