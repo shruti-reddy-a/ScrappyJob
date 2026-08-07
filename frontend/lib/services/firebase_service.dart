@@ -120,7 +120,7 @@ class FirebaseService extends ChangeNotifier {
     try {
       if (kIsWeb) {
         GoogleAuthProvider authProvider = GoogleAuthProvider();
-        await _auth.signInWithPopup(authProvider);
+        await _auth.signInWithRedirect(authProvider);
       } else {
         final googleUser = await GoogleSignIn.instance.authenticate();
 
