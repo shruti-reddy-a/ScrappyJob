@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/job_config.dart';
 import '../models/ats_platform.dart';
+import '../models/job_view_item.dart';
 
 class FirebaseService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -24,6 +25,18 @@ class FirebaseService extends ChangeNotifier {
   List<AtsPlatform> get atsPlatforms => _atsPlatforms;
   List<AtsPlatform> get activeAtsPlatforms => _atsPlatforms.where((p) => p.isEnabled).toList();
   bool get isLoading => _isLoading;
+  
+  List<JobViewItem> get allJobs {
+    final List<JobViewItem> all = [];
+    for (var run in _jobRuns) {
+      for (int i = 0; i < run.jobs.length; i++) {
+        all.add(JobViewItem(runId: run.id, originalIndex: i, job: run.jobs[i]));
+      }
+    }
+    // Sort by posted ISO date if possible, but we don't have iso date in dart yet.
+    // Instead, we just trust they are sorted or sort by run date descending which is implicit by run order.
+    return all;
+  }
   
   RunProgress? _activeProgress;
   RunProgress? get activeProgress => _activeProgress;

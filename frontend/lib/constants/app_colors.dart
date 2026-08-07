@@ -17,4 +17,8 @@ class AppColors {
   static const onSecondary = Color(0xFFFFFFFF);
   static const secondaryContainer = Color(0xFF8DF5E4);
   static const onSecondaryContainer = Color(0xFF007165);
+  static const borderColor = Color(0xFFE5E7EB);
+  static const textSecondary = Color(0xFF6B7280);
+  static const success = Color(0xFF10B981);
+  static const successBackground = Color(0xFFD1FAE5);
 }

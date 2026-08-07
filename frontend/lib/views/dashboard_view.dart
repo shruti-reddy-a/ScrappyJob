@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import 'tabs/dashboard_tab.dart';
 import 'tabs/config_tab.dart';
-import 'tabs/agent_tab.dart';
-import 'tabs/logs_tab.dart';
+import 'tabs/jobs_tab.dart';
 import 'tabs/settings_tab.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -21,29 +21,39 @@ class _DashboardViewState extends State<DashboardView> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'ScrappyJob',
-          style: TextStyle(
-            color: AppColors.onSurface,
-            fontWeight: FontWeight.w600,
-            fontSize: 24,
-            letterSpacing: 0,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.bolt, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'ScrappyJob',
+              style: GoogleFonts.lora(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
         ),
         backgroundColor: AppColors.background,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
       ),
       body: IndexedStack(
         index: _currentIndex,
         children: [
           const DashboardTab(),
-          ConfigTab(onRunStarted: () => setState(() => _currentIndex = 2)),
-          AgentTab(onViewLog: (jobRunId) {
-            // Future feature: select the specific log by jobRunId in LogsTab
-            setState(() => _currentIndex = 3);
-          }),
-          const LogsTab(),
+          const JobsTab(),
+          ConfigTab(onRunStarted: () => setState(() => _currentIndex = 1)),
           const SettingsTab(),
         ],
       ),
@@ -69,11 +79,10 @@ class _DashboardViewState extends State<DashboardView> {
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
           type: BottomNavigationBarType.fixed,
           items: [
-            _buildNavItem(Icons.dashboard, 'Dashboard', 0),
-            _buildNavItem(Icons.tune, 'Config', 1),
-            _buildNavItem(Icons.smart_toy, 'Agent', 2),
-            _buildNavItem(Icons.list_alt, 'Logs', 3),
-            _buildNavItem(Icons.settings, 'Settings', 4),
+            _buildNavItem(Icons.home_outlined, 'Home', 0),
+            _buildNavItem(Icons.work_outline, 'Jobs', 1),
+            _buildNavItem(Icons.search, 'Searches', 2),
+            _buildNavItem(Icons.settings_outlined, 'Settings', 3),
           ],
         ),
       ),
