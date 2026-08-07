@@ -92,6 +92,13 @@ class ScrapedJob {
     this.isApplied = false,
   });
 
+  List<String> get snippets {
+    if (snippetNotes.isEmpty) return [];
+    // Assuming snippetNotes might be separated by newlines or semicolons.
+    // We will just split by newline.
+    return snippetNotes.split('\n').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  }
+
   factory ScrapedJob.fromMap(Map<String, dynamic> data) {
     return ScrapedJob(
       sourceAts: data['Source ATS']?.toString() ?? '',

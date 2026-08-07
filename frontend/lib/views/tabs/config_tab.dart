@@ -12,10 +12,8 @@ class ConfigTab extends StatelessWidget {
   const ConfigTab({super.key, required this.onRunStarted});
 
   void _showConfigModal(BuildContext context, {JobConfig? job}) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (ctx) => ConfigModal(
         job: job,
         onRun: job != null ? () {
@@ -318,36 +316,56 @@ class _SearchJobCardState extends State<SearchJobCard> {
                       ),
                     ),
                   ),
-                  
-                  if (isCurrentlyRunning)
-                    _buildHistoryRow(
-                      statusText: 'Running',
-                      statusColor: const Color(0xFF165C53),
-                      statusBg: const Color(0xFFE8F6F4),
-                      hasDot: true,
-                      dotColor: const Color(0xFF00C896),
-                      dateStr: 'Just now',
-                      foundStr: 'running...',
-                      timeStr: '—',
-                    ),
-
                   if (runs.isEmpty && !isCurrentlyRunning)
                     const Padding(
                       padding: EdgeInsets.fromLTRB(24, 16, 24, 24),
                       child: Text('No runs yet.', style: TextStyle(color: AppColors.outline)),
                     )
                   else
-                    ...runs.map((r) {
-                      return _buildHistoryRow(
-                        statusText: 'Success',
-                        statusColor: const Color(0xFF007954),
-                        statusBg: const Color(0xFFE6F6ED),
-                        hasDot: false,
-                        dateStr: _formatTime(r.createdAt),
-                        foundStr: '${r.totalFound.toString().padLeft(2, ' ')} found',
-                        timeStr: r.executionTimeMs > 0 ? '${(r.executionTimeMs / 1000).toStringAsFixed(1)}s' : '—',
-                      );
-                    }),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: DataTable(
+                        headingTextStyle: const TextStyle(
+                          color: AppColors.outline,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        dataTextStyle: const TextStyle(
+                          color: AppColors.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                        dividerThickness: 1,
+                        columnSpacing: 24,
+                        horizontalMargin: 12,
+                        columns: const [
+                          DataColumn(label: Text('STATUS')),
+                          DataColumn(label: Text('DATE')),
+                          DataColumn(label: Text('JOBS FOUND'), numeric: true),
+                          DataColumn(label: Text('TIME TAKEN'), numeric: true),
+                        ],
+                        rows: [
+                          if (isCurrentlyRunning)
+                            DataRow(
+                              cells: [
+                                DataCell(_buildStatusBadge('Running', const Color(0xFF165C53), const Color(0xFFE8F6F4), hasDot: true, dotColor: const Color(0xFF00C896))),
+                                const DataCell(Text('Just now')),
+                                const DataCell(Text('running...', style: TextStyle(fontFamily: 'monospace'))),
+                                const DataCell(Text('—')),
+                              ],
+                            ),
+                          ...runs.map((r) {
+                            return DataRow(
+                              cells: [
+                                DataCell(_buildStatusBadge('Success', const Color(0xFF007954), const Color(0xFFE6F6ED))),
+                                DataCell(Text(_formatTime(r.createdAt))),
+                                DataCell(Text(r.totalFound.toString(), style: const TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w600))),
+                                DataCell(Text(r.executionTimeMs > 0 ? '${(r.executionTimeMs / 1000).toStringAsFixed(1)}s' : '—')),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -358,89 +376,37 @@ class _SearchJobCardState extends State<SearchJobCard> {
     );
   }
 
-  Widget _buildHistoryRow({
-    required String statusText,
-    required Color statusColor,
-    required Color statusBg,
-    required bool hasDot,
-    Color? dotColor,
-    required String dateStr,
-    required String foundStr,
-    required String timeStr,
-  }) {
-    return Column(
-      children: [
-        const Divider(height: 1, color: AppColors.borderColor),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (hasDot) ...[
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: dotColor ?? statusColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
-                    Text(
-                      statusText,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+  Widget _buildStatusBadge(String text, Color color, Color bgColor, {bool hasDot = false, Color? dotColor}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasDot) ...[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: dotColor ?? color,
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  dateStr,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              Text(
-                foundStr,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(width: 16),
-              SizedBox(
-                width: 40,
-                child: Text(
-                  timeStr,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

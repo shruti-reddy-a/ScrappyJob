@@ -20,9 +20,11 @@ class _JobsTabState extends State<JobsTab> {
   String _searchQuery = '';
   JobFilter _currentFilter = JobFilter.all;
   final TextEditingController _searchController = TextEditingController();
+  JobViewItem? _selectedJob;
 
   List<String> _selectedCompanies = [];
   List<String> _selectedLocations = [];
+  List<String> _selectedSources = [];
   List<String> _selectedSalaries = [];
   List<String> _selectedTimes = [];
 
@@ -144,6 +146,9 @@ class _JobsTabState extends State<JobsTab> {
       if (_selectedLocations.isNotEmpty) {
         if (!_selectedLocations.contains(item.job.location)) return false;
       }
+      if (_selectedSources.isNotEmpty) {
+        if (!_selectedSources.contains(item.job.sourceAts)) return false;
+      }
       if (_selectedSalaries.isNotEmpty) {
         int threshold = int.parse(_selectedSalaries.first.replaceAll(RegExp(r'[^0-9]'), ''));
         int? jobSal = _extractAnnualSalary(item.job.salary);
@@ -238,6 +243,7 @@ class _JobsTabState extends State<JobsTab> {
             builder: (context) {
               final uniqueCompanies = allJobs.map((e) => e.job.company).where((c) => c.isNotEmpty).toSet().toList()..sort();
               final uniqueLocations = allJobs.map((e) => e.job.location).where((l) => l.isNotEmpty).toSet().toList()..sort();
+              final uniqueSources = allJobs.map((e) => e.job.sourceAts).where((s) => s.isNotEmpty).toSet().toList()..sort();
               final salaryOptions = [
                 r'$40,000+',
                 r'$60,000+',
@@ -265,6 +271,7 @@ class _JobsTabState extends State<JobsTab> {
                 children: [
                   _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompanies, (val) => setState(() => _selectedCompanies = val)),
                   _buildDropdownFilter('Any location', uniqueLocations, _selectedLocations, (val) => setState(() => _selectedLocations = val)),
+                  _buildDropdownFilter('Any source', uniqueSources, _selectedSources, (val) => setState(() => _selectedSources = val)),
                   _buildDropdownFilter('Any salary', salaryOptions, _selectedSalaries, (val) => setState(() => _selectedSalaries = val), isMultiSelect: false, showSearch: false, secondaryButtonText: 'Cancel'),
                   _buildDropdownFilter('Any time', timeOptions, _selectedTimes, (val) {
                     setState(() {
@@ -281,32 +288,101 @@ class _JobsTabState extends State<JobsTab> {
           ),
           const SizedBox(height: 24),
 
-          // Data Table
+          // Two-pane Layout
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderColor),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Column(
-                  children: [
-                    _buildTableHeader(),
-                    const Divider(height: 1, color: AppColors.borderColor),
-                    Expanded(
-                      child: ListView.separated(
-                        itemCount: filteredJobs.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.borderColor),
-                        itemBuilder: (context, index) {
-                          return _buildTableRow(filteredJobs[index], firebaseService);
-                        },
-                      ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left Pane: Job List
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.borderColor),
                     ),
-                  ],
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: filteredJobs.isEmpty
+                        ? const Center(child: Text('No jobs found.', style: TextStyle(color: AppColors.outline)))
+                        : ListView.separated(
+                            itemCount: filteredJobs.length,
+                            separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.borderColor),
+                            itemBuilder: (context, index) {
+                              final item = filteredJobs[index];
+                              final isSelected = _selectedJob == item;
+                              return InkWell(
+                                onTap: () => setState(() => _selectedJob = item),
+                                child: Container(
+                                  color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : Colors.transparent,
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.job.jobTitle,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color: isSelected ? AppColors.primary : AppColors.onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${item.job.company} • ${item.job.location}',
+                                        style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            _getFormattedPostedDate(item.job.postedDate, item.job.postingTime),
+                                            style: const TextStyle(fontSize: 12, color: AppColors.outline),
+                                          ),
+                                          if (item.job.isApplied)
+                                            const Icon(Icons.check_circle, size: 16, color: AppColors.success)
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                
+                // Right Pane: Job Details
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.borderColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: _selectedJob == null
+                        ? const Center(
+                            child: Text(
+                              'Select a job to view details',
+                              style: TextStyle(color: AppColors.outline, fontSize: 16),
+                            ),
+                          )
+                        : _buildJobDetails(_selectedJob!, firebaseService),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -329,7 +405,7 @@ class _JobsTabState extends State<JobsTab> {
   Widget _buildSegmentedControl() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6), // light gray background for segmented control
+        color: const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.all(4),
@@ -374,164 +450,189 @@ class _JobsTabState extends State<JobsTab> {
     );
   }
 
-  Widget _buildTableHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        children: [
-          _headerCell('ROLE', flex: 4),
-          _headerCell('COMPANY', flex: 2),
-          _headerCell('LOCATION', flex: 2),
-          _headerCell('SOURCE', flex: 1),
-          _headerCell('SALARY', flex: 2),
-          _headerCell('POSTED', flex: 1),
-          _headerCell('APPLY', flex: 2, align: TextAlign.right),
-        ],
-      ),
-    );
-  }
-
-  Widget _headerCell(String title, {int flex = 1, TextAlign align = TextAlign.left}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        title,
-        textAlign: align,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTableRow(JobViewItem item, FirebaseService firebaseService) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              item.job.jobTitle,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.onSurface),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              item.job.company,
-              style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              item.job.location,
-              style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              item.job.sourceAts,
-              style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              item.job.salary.isNotEmpty ? item.job.salary.replaceAll('.0 ', ' ').replaceAll('.0', '') : 'N/A',
-              style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              _getFormattedPostedDate(item.job.postedDate, item.job.postingTime),
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (item.job.applicationLink.isNotEmpty)
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => _launchUrl(item.job.applicationLink),
-                      child: const Row(
-                        children: [
-                          Text(
-                            'Apply',
-                            style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 14),
-                          ),
-                          SizedBox(width: 4),
-                          Icon(Icons.open_in_new, size: 14, color: AppColors.primary),
-                        ],
+  Widget _buildJobDetails(JobViewItem item, FirebaseService firebaseService) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Detail Header
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.job.jobTitle,
+                      style: GoogleFonts.lora(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.onSurface,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.business, size: 16, color: AppColors.outline),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.job.company,
+                          style: const TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant),
+                        ),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.location_on_outlined, size: 16, color: AppColors.outline),
+                        const SizedBox(width: 4),
+                        Text(
+                          item.job.location,
+                          style: const TextStyle(fontSize: 16, color: AppColors.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (item.job.salary.isNotEmpty)
+                          Chip(
+                            label: Text(item.job.salary.replaceAll('.0 ', ' ').replaceAll('.0', '')),
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                            labelStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                            side: BorderSide.none,
+                          ),
+                        Chip(
+                          label: Text('Source: ${item.job.sourceAts}'),
+                          backgroundColor: AppColors.surfaceContainerHigh,
+                          labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+                          side: BorderSide.none,
+                        ),
+                        Chip(
+                          label: Text('Posted: ${_getFormattedPostedDate(item.job.postedDate, item.job.postingTime)}'),
+                          backgroundColor: AppColors.surfaceContainerHigh,
+                          labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+                          side: BorderSide.none,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: AppColors.borderColor),
+        
+        // Snippets or Full Description
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Snippets from Job Description',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.onSurface,
                   ),
-                const SizedBox(width: 16),
-                _buildApplyButton(item, firebaseService),
+                ),
+                const SizedBox(height: 16),
+                ...item.job.snippets.map((snippet) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6.0, right: 8.0),
+                        child: Icon(Icons.circle, size: 6, color: AppColors.primary),
+                      ),
+                      Expanded(
+                        child: Text(
+                          snippet.trim(),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+                if (item.job.snippets.isEmpty)
+                  const Text('No snippets extracted for this job.', style: TextStyle(color: AppColors.outline)),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        
+        // Footer Actions
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.borderColor)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _buildApplyButton(item, firebaseService),
+              const SizedBox(width: 16),
+              if (item.job.applicationLink.isNotEmpty)
+                ElevatedButton.icon(
+                  onPressed: () => _launchUrl(item.job.applicationLink),
+                  icon: const Icon(Icons.open_in_new, size: 18),
+                  label: const Text('Apply Now', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildApplyButton(JobViewItem item, FirebaseService firebaseService) {
     if (item.job.isApplied) {
-      return InkWell(
-        onTap: () {
+      return OutlinedButton.icon(
+        onPressed: () {
            final run = firebaseService.jobRuns.firstWhere((r) => r.id == item.runId);
            firebaseService.toggleJobApplied(item.runId, run.jobs, item.originalIndex, false);
+           setState(() {}); // trigger rebuild to update button text if needed
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8F6F4),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.check, size: 16, color: Color(0xFF165C53)),
-              SizedBox(width: 4),
-              Text(
-                'Applied',
-                style: TextStyle(color: Color(0xFF165C53), fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-            ],
-          ),
+        icon: const Icon(Icons.check, size: 18, color: AppColors.success),
+        label: const Text('Applied', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600, fontSize: 15)),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          side: const BorderSide(color: AppColors.success, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
 
-    return InkWell(
-      onTap: () {
+    return OutlinedButton(
+      onPressed: () {
          final run = firebaseService.jobRuns.firstWhere((r) => r.id == item.runId);
          firebaseService.toggleJobApplied(item.runId, run.jobs, item.originalIndex, true);
+         setState(() {}); 
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Text(
-          'Mark\napplied',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 11, height: 1.1),
-        ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        side: const BorderSide(color: AppColors.borderColor),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        foregroundColor: AppColors.onSurfaceVariant,
       ),
+      child: const Text('Mark as applied', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
     );
   }
 }

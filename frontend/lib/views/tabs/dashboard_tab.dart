@@ -93,10 +93,8 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  showModalBottomSheet(
+                  showDialog(
                     context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
                     builder: (ctx) => const ConfigModal(),
                   );
                 },

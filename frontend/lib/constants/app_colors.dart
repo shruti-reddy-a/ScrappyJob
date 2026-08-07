@@ -21,4 +21,20 @@ class AppColors {
   static const textSecondary = Color(0xFF6B7280);
   static const success = Color(0xFF10B981);
   static const successBackground = Color(0xFFD1FAE5);
+
+  static List<BoxShadow> get subtleShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.03),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
+    )
+  ];
+  
+  static List<BoxShadow> get hoverShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 12,
+      offset: const Offset(0, 6),
+    )
+  ];
 }

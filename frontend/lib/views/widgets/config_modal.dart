@@ -168,272 +168,290 @@ class _ConfigModalState extends State<ConfigModal> {
     // Sort ATS alphabetically
     availableAts.sort();
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.job == null ? 'New search' : 'Edit search',
-                  style: GoogleFonts.lora(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.outline),
-                  onPressed: () => Navigator.pop(context),
-                  splashRadius: 24,
-                ),
-              ],
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(24),
+      child: Container(
+        width: 600, // Constrained width for desktop
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
             ),
-          ),
-          const Divider(height: 1, color: AppColors.borderColor),
-          
-          // Scrollable Form Body
-          Flexible(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: bottomInset + 24, left: 24, right: 24, top: 24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildLabel('SEARCH NAME'),
-                    _buildTextField(
-                      controller: _jobLabelCtrl,
-                      hint: 'e.g. SF Product Managers',
+          ],
+        ),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.job == null ? 'New search' : 'Edit search',
+                    style: GoogleFonts.lora(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onSurface,
                     ),
-                    const SizedBox(height: 24),
-                    
-                    _buildLabel('JOB TITLES'),
-                    _buildTextField(
-                      controller: _jobTitlesCtrl,
-                      hint: 'Product manager, Senior product manager',
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    _buildLabel('LOCATIONS'),
-                    _buildTextField(
-                      controller: _locationsCtrl,
-                      hint: 'SF Bay area, CA, USA',
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('RUNS'),
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.outline),
+                    onPressed: () => Navigator.pop(context),
+                    splashRadius: 24,
+                  ),
+                ],
+              ),
+            ),
+            
+            // Divider
+            const Divider(height: 1, color: AppColors.borderColor),
+            
+            // Scrollable Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('SEARCH LABEL'),
+                      _buildTextField(
+                        controller: _jobLabelCtrl,
+                        hint: 'e.g., Senior PM Roles',
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      _buildLabel('JOB TITLES (COMMA SEPARATED)'),
+                      _buildTextField(
+                        controller: _jobTitlesCtrl,
+                        hint: 'e.g., Product Manager, AI Product Manager',
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      _buildLabel('LOCATIONS (COMMA SEPARATED)'),
+                      _buildTextField(
+                        controller: _locationsCtrl,
+                        hint: 'e.g., San Francisco Bay Area, Remote',
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('RUNS'),
+                                DropdownButtonFormField<String>(
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.borderColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.borderColor),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                    ),
+                                    fillColor: Colors.white,
+                                    filled: true,
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  fillColor: Colors.white,
-                                  filled: true,
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
+                                  initialValue: _selectedFrequency,
+                                  items: _frequencyOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedFrequency = val);
+                                  },
                                 ),
-                                icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
-                                initialValue: _selectedFrequency,
-                                items: _frequencyOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedFrequency = val);
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('LOOKS BACK'),
+                                DropdownButtonFormField<String>(
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.borderColor),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.borderColor),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                    ),
+                                    fillColor: Colors.white,
+                                    filled: true,
+                                  ),
+                                  icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
+                                  initialValue: _selectedTimeframe,
+                                  items: _timeframeOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setState(() => _selectedTimeframe = val);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      Row(
+                        children: [
+                          const Icon(Icons.mail_outline, size: 16, color: AppColors.onSurfaceVariant),
+                          const SizedBox(width: 6),
+                          _buildLabel('EMAIL RESULTS TO (OPTIONAL)'),
+                        ],
+                      ),
+                      _buildTextField(
+                        controller: _emailCtrl,
+                        hint: 'you@email.com',
+                        isOptional: true,
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildLabel('PLATFORMS TO SEARCH'),
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedAts = List.from(availableAts);
+                                  });
                                 },
+                                child: const Text('Select all', style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                              ),
+                              const SizedBox(width: 16),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedAts.clear();
+                                  });
+                                },
+                                child: const Text('Clear', style: TextStyle(color: AppColors.outline, fontSize: 13, fontWeight: FontWeight.w600)),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('LOOKS BACK'),
-                              DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                  ),
-                                  fillColor: Colors.white,
-                                  filled: true,
-                                ),
-                                icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
-                                initialValue: _selectedTimeframe,
-                                items: _timeframeOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedTimeframe = val);
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    Row(
-                      children: [
-                        const Icon(Icons.mail_outline, size: 16, color: AppColors.onSurfaceVariant),
-                        const SizedBox(width: 6),
-                        _buildLabel('EMAIL RESULTS TO (OPTIONAL)'),
-                      ],
-                    ),
-                    _buildTextField(
-                      controller: _emailCtrl,
-                      hint: 'you@email.com',
-                      isOptional: true,
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildLabel('PLATFORMS TO SEARCH'),
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedAts = List.from(availableAts);
-                                });
-                              },
-                              child: const Text('Select all', style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      Wrap(
+                        spacing: 12.0,
+                        runSpacing: 12.0,
+                        children: availableAts.map((atsName) {
+                          final isSelected = _selectedAts.contains(atsName);
+                          return FilterChip(
+                            label: Text(atsName),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedAts.add(atsName);
+                                } else {
+                                  _selectedAts.remove(atsName);
+                                }
+                              });
+                            },
+                            backgroundColor: Colors.white,
+                            selectedColor: AppColors.primary.withValues(alpha: 0.1),
+                            checkmarkColor: AppColors.primary,
+                            labelStyle: TextStyle(
+                              color: isSelected ? AppColors.primary : AppColors.onSurfaceVariant,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
-                            const SizedBox(width: 16),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedAts.clear();
-                                });
-                              },
-                              child: const Text('Clear', style: TextStyle(color: AppColors.outline, fontSize: 13, fontWeight: FontWeight.w600)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    Wrap(
-                      spacing: 12.0,
-                      runSpacing: 12.0,
-                      children: availableAts.map((ats) {
-                        final isSelected = _selectedAts.contains(ats);
-                        return InkWell(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected) {
-                                _selectedAts.remove(ats);
-                              } else {
-                                _selectedAts.add(ats);
-                              }
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
                                 color: isSelected ? AppColors.primary : AppColors.borderColor,
-                                width: 1,
+                                width: isSelected ? 1.5 : 1,
                               ),
                             ),
-                            child: Text(
-                              ats,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isSelected ? AppColors.primary : AppColors.onSurface,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 48),
-                  ],
+                          );
+                        }).toList(),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      _buildLabel('SPECIFIC COMPANY CAREER PAGE URLS (OPTIONAL)'),
+                      _buildTextField(
+                        controller: _targetUrlsCtrl,
+                        hint: 'e.g. https://careers.stripe.com, https://openai.com/careers',
+                        isOptional: true,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          
-          // Footer Buttons
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppColors.borderColor, width: 1)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: AppColors.borderColor),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      foregroundColor: AppColors.onSurface,
+            
+            // Footer
+            Container(
+              padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: AppColors.borderColor)),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: AppColors.borderColor),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        foregroundColor: AppColors.onSurface,
+                      ),
+                      child: const Text('Cancel', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
-                    child: const Text('Cancel', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9EBBB5), // Custom light green as in screenshot
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Save search', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
-                    child: const Text('Save search', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
