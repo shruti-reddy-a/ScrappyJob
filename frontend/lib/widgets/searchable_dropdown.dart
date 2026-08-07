@@ -4,15 +4,15 @@ import '../constants/app_colors.dart';
 class SearchableDropdown extends StatefulWidget {
   final String hint;
   final List<String> options;
-  final String? selectedValue;
-  final ValueChanged<String?> onChanged;
+  final List<String> selectedValues;
+  final ValueChanged<List<String>> onApply;
 
   const SearchableDropdown({
     super.key,
     required this.hint,
     required this.options,
-    this.selectedValue,
-    required this.onChanged,
+    required this.selectedValues,
+    required this.onApply,
   });
 
   @override
@@ -26,6 +26,22 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  
+  late List<String> _tempSelected;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempSelected = List.from(widget.selectedValues);
+  }
+
+  @override
+  void didUpdateWidget(SearchableDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isOpen) {
+      _tempSelected = List.from(widget.selectedValues);
+    }
+  }
 
   @override
   void dispose() {
@@ -39,6 +55,7 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
     if (_isOpen) {
       _removeOverlay();
     } else {
+      _tempSelected = List.from(widget.selectedValues);
       _showOverlay();
     }
   }
@@ -50,6 +67,17 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
       _isOpen = false;
       _searchQuery = '';
       _searchController.clear();
+    });
+  }
+
+  void _applySelection() {
+    widget.onApply(List.from(_tempSelected));
+    _removeOverlay();
+  }
+
+  void _resetSelection(StateSetter setOverlayState) {
+    setOverlayState(() {
+      _tempSelected.clear();
     });
   }
 
@@ -67,14 +95,14 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
               child: Container(color: Colors.transparent),
             ),
             Positioned(
-              width: 260, // Fixed width for the popover
+              width: 320, // Slightly wider to match LinkedIn style
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
                 offset: Offset(0, size.height + 8),
                 child: Material(
                   elevation: 8,
-                  shadowColor: Colors.black.withValues(alpha: 0.1),
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                   color: Colors.white,
                   child: StatefulBuilder(
@@ -84,8 +112,7 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                           .toList();
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        constraints: const BoxConstraints(maxHeight: 300),
+                        constraints: const BoxConstraints(maxHeight: 400),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -95,84 +122,145 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Header with Search and Close
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                              child: TextField(
-                                controller: _searchController,
-                                focusNode: _searchFocusNode,
-                                autofocus: true,
-                                onChanged: (val) {
-                                  setOverlayState(() {
-                                    _searchQuery = val;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'Search ${widget.hint.toLowerCase().replaceAll("any ", "")}',
-                                  hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: AppColors.borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(color: Colors.blue), // Light blue border on focus
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Expanded(
-                              child: ListView(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.zero,
+                              padding: const EdgeInsets.only(left: 16, right: 8, top: 12, bottom: 8),
+                              child: Row(
                                 children: [
-                                  // The 'Any' option to reset
-                                  InkWell(
-                                    onTap: () {
-                                      widget.onChanged(null);
-                                      _removeOverlay();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      child: Text(
-                                        widget.hint,
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _searchController,
+                                      focusNode: _searchFocusNode,
+                                      autofocus: true,
+                                      onChanged: (val) {
+                                        setOverlayState(() {
+                                          _searchQuery = val;
+                                        });
+                                      },
+                                      decoration: InputDecoration(
+                                        hintText: 'Add a ${widget.hint.toLowerCase().replaceAll("any ", "")}',
+                                        hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        isDense: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(4),
+                                          borderSide: const BorderSide(color: AppColors.borderColor),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(4),
+                                          borderSide: const BorderSide(color: AppColors.borderColor),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(4),
+                                          borderSide: const BorderSide(color: Colors.blue),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  ...filteredOptions.map((option) {
-                                    final isSelected = widget.selectedValue == option;
-                                    return InkWell(
-                                      onTap: () {
-                                        widget.onChanged(option);
-                                        _removeOverlay();
-                                      },
-                                      child: Container(
-                                        color: isSelected ? AppColors.surfaceContainerHigh : Colors.transparent,
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                        child: Text(
-                                          option,
-                                          style: const TextStyle(
-                                            color: AppColors.onSurface,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }),
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    icon: const Icon(Icons.close, size: 20, color: AppColors.onSurfaceVariant),
+                                    onPressed: _removeOverlay,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    splashRadius: 20,
+                                  ),
                                 ],
                               ),
                             ),
+                            
+                            // Scrollable list of checkboxes
+                            Expanded(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.zero,
+                                itemCount: filteredOptions.length,
+                                itemBuilder: (context, index) {
+                                  final option = filteredOptions[index];
+                                  final isSelected = _tempSelected.contains(option);
+                                  return InkWell(
+                                    onTap: () {
+                                      setOverlayState(() {
+                                        if (isSelected) {
+                                          _tempSelected.remove(option);
+                                        } else {
+                                          _tempSelected.add(option);
+                                        }
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      child: Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: Checkbox(
+                                              value: isSelected,
+                                              onChanged: (val) {
+                                                setOverlayState(() {
+                                                  if (val == true) {
+                                                    _tempSelected.add(option);
+                                                  } else {
+                                                    _tempSelected.remove(option);
+                                                  }
+                                                });
+                                              },
+                                              activeColor: const Color(0xFF0A66C2), // LinkedIn blue for checkboxes, or use primary? Let's use primary.
+                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              option,
+                                              style: const TextStyle(
+                                                color: AppColors.onSurface,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            
+                            // Footer with Reset and Show results
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: const BoxDecoration(
+                                border: Border(top: BorderSide(color: AppColors.borderColor)),
+                                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: () => _resetSelection(setOverlayState),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: AppColors.onSurfaceVariant,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                    child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w600)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: _applySelection,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0A66C2), // LinkedIn blue
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                    ),
+                                    child: const Text('Show results', style: TextStyle(fontWeight: FontWeight.w600)),
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       );
@@ -193,6 +281,19 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    final hasSelection = widget.selectedValues.isNotEmpty;
+    
+    // Determine the label text
+    String labelText = widget.hint;
+    if (hasSelection) {
+      if (widget.selectedValues.length == 1) {
+        labelText = widget.selectedValues.first;
+      } else {
+        // e.g. "Company" without "Any"
+        labelText = widget.hint.replaceAll("Any ", "");
+      }
+    }
+
     return CompositedTransformTarget(
       link: _layerLink,
       child: InkWell(
@@ -201,29 +302,46 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: hasSelection ? const Color(0xFF057642) : Colors.white, // LinkedIn green for selected state
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: _isOpen ? AppColors.primary : AppColors.borderColor,
+              color: hasSelection ? const Color(0xFF057642) : AppColors.borderColor,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                (widget.selectedValue != null && widget.selectedValue!.isNotEmpty) 
-                    ? widget.selectedValue! 
-                    : widget.hint,
-                style: const TextStyle(
-                  color: AppColors.onSurface,
+                labelText,
+                style: TextStyle(
+                  color: hasSelection ? Colors.white : AppColors.onSurface,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 8),
+              if (hasSelection) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${widget.selectedValues.length}',
+                    style: const TextStyle(
+                      color: Color(0xFF057642),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 6),
               Icon(
                 _isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                color: AppColors.onSurfaceVariant,
+                color: hasSelection ? Colors.white : AppColors.onSurfaceVariant,
                 size: 18,
               ),
             ],

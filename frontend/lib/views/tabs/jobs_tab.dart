@@ -21,10 +21,10 @@ class _JobsTabState extends State<JobsTab> {
   JobFilter _currentFilter = JobFilter.all;
   final TextEditingController _searchController = TextEditingController();
 
-  String? _selectedCompany;
-  String? _selectedLocation;
-  String? _selectedSalary;
-  String? _selectedTime;
+  List<String> _selectedCompanies = [];
+  List<String> _selectedLocations = [];
+  List<String> _selectedSalaries = [];
+  List<String> _selectedTimes = [];
 
   @override
   void dispose() {
@@ -50,17 +50,17 @@ class _JobsTabState extends State<JobsTab> {
       if (_currentFilter == JobFilter.notApplied && item.job.isApplied) return false;
       if (_currentFilter == JobFilter.applied && !item.job.isApplied) return false;
 
-      if (_selectedCompany != null && _selectedCompany!.isNotEmpty && _selectedCompany != 'Any company') {
-        if (item.job.company != _selectedCompany) return false;
+      if (_selectedCompanies.isNotEmpty) {
+        if (!_selectedCompanies.contains(item.job.company)) return false;
       }
-      if (_selectedLocation != null && _selectedLocation!.isNotEmpty && _selectedLocation != 'Any location') {
-        if (item.job.location != _selectedLocation) return false;
+      if (_selectedLocations.isNotEmpty) {
+        if (!_selectedLocations.contains(item.job.location)) return false;
       }
-      if (_selectedSalary != null && _selectedSalary!.isNotEmpty && _selectedSalary != 'Any salary') {
-        if (item.job.salary != _selectedSalary) return false;
+      if (_selectedSalaries.isNotEmpty) {
+        if (!_selectedSalaries.contains(item.job.salary)) return false;
       }
-      if (_selectedTime != null && _selectedTime!.isNotEmpty && _selectedTime != 'Any time') {
-        if (item.job.postedDate != _selectedTime) return false;
+      if (_selectedTimes.isNotEmpty) {
+        if (!_selectedTimes.contains(item.job.postedDate)) return false;
       }
 
       if (_searchQuery.isNotEmpty) {
@@ -142,10 +142,10 @@ class _JobsTabState extends State<JobsTab> {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
-                  _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompany, (val) => setState(() => _selectedCompany = val)),
-                  _buildDropdownFilter('Any location', uniqueLocations, _selectedLocation, (val) => setState(() => _selectedLocation = val)),
-                  _buildDropdownFilter('Any salary', uniqueSalaries, _selectedSalary, (val) => setState(() => _selectedSalary = val)),
-                  _buildDropdownFilter('Any time', uniqueTimes, _selectedTime, (val) => setState(() => _selectedTime = val)),
+                  _buildDropdownFilter('Any company', uniqueCompanies, _selectedCompanies, (val) => setState(() => _selectedCompanies = val)),
+                  _buildDropdownFilter('Any location', uniqueLocations, _selectedLocations, (val) => setState(() => _selectedLocations = val)),
+                  _buildDropdownFilter('Any salary', uniqueSalaries, _selectedSalaries, (val) => setState(() => _selectedSalaries = val)),
+                  _buildDropdownFilter('Any time', uniqueTimes, _selectedTimes, (val) => setState(() => _selectedTimes = val)),
                 ],
               );
             }
@@ -185,12 +185,12 @@ class _JobsTabState extends State<JobsTab> {
     );
   }
 
-  Widget _buildDropdownFilter(String hint, List<String> options, String? selectedValue, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownFilter(String hint, List<String> options, List<String> selectedValues, ValueChanged<List<String>> onChanged) {
     return SearchableDropdown(
       hint: hint,
       options: options,
-      selectedValue: selectedValue,
-      onChanged: onChanged,
+      selectedValues: selectedValues,
+      onApply: onChanged,
     );
   }
 
