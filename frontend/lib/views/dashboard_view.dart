@@ -55,9 +55,17 @@ class _DashboardViewState extends State<DashboardView> {
             ),
           ],
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: AppColors.borderColor,
+            height: 1,
+          ),
+        ),
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -69,52 +77,71 @@ class _DashboardViewState extends State<DashboardView> {
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLowest,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 6,
-              offset: const Offset(0, -4),
-            )
-          ],
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: AppColors.borderColor, width: 1)),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) => setState(() => _currentIndex = i),
-          selectedItemColor: AppColors.onSurface,
-          unselectedItemColor: AppColors.onSurfaceVariant,
-          backgroundColor: AppColors.surfaceContainerLowest,
-          elevation: 0,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-          type: BottomNavigationBarType.fixed,
-          items: [
-            _buildNavItem(Icons.home_outlined, 'Home', 0),
-            _buildNavItem(Icons.work_outline, 'Jobs', 1),
-            _buildNavItem(Icons.search, 'Searches', 2),
-            _buildNavItem(Icons.settings_outlined, 'Settings', 3),
-          ],
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(Icons.home_outlined, 'Home', 0),
+                _buildNavItem(Icons.work_outline, 'Jobs', 1),
+                _buildNavItem(Icons.search, 'Searches', 2, showDot: true),
+                _buildNavItem(Icons.settings_outlined, 'Settings', 3),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index, {bool showDot = false}) {
     final isSelected = _currentIndex == index;
-    return BottomNavigationBarItem(
-      icon: Container(
+    final color = isSelected ? AppColors.primary : AppColors.outline;
+    
+    return InkWell(
+      onTap: () => setState(() => _currentIndex = index),
+      customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.secondaryContainer : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Icon(
-          icon,
-          color: isSelected ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, color: color, size: 24),
+                if (showDot)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
-      label: label,
     );
   }
 }
