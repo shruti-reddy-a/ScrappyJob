@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/firebase_service.dart';
 import '../../models/job_config.dart';
 import '../../constants/app_colors.dart';
@@ -21,29 +22,43 @@ class _ConfigModalState extends State<ConfigModal> {
   late TextEditingController _targetUrlsCtrl;
   late TextEditingController _emailCtrl;
   
-  String _selectedFrequency = 'Every 4 Hours';
-  String _selectedTimeframe = 'Past 24 Hours';
+  String _selectedFrequency = 'Every 4 hours';
+  String _selectedTimeframe = 'Past 24 hours';
   List<String> _selectedAts = [];
 
-  final List<String> _frequencyOptions = ['Now', 'Every 4 Hours', 'Every 6 Hours', 'Every 12 Hours', 'Daily'];
-  final List<String> _timeframeOptions = ['Past 12 Hours', 'Past 24 Hours', 'Past 48 Hours', 'Past 7 Days'];
+  final List<String> _frequencyOptions = ['Now', 'Every 4 hours', 'Every 6 hours', 'Every 12 hours', 'Daily'];
+  final List<String> _timeframeOptions = ['Past 12 hours', 'Past 24 hours', 'Past 48 hours', 'Past 7 days'];
 
   @override
   void initState() {
     super.initState();
-    _jobLabelCtrl = TextEditingController(text: widget.job?.jobLabel ?? 'My Scraper Job');
-    _jobTitlesCtrl = TextEditingController(text: widget.job?.jobTitles.join(', ') ?? 'Product manager, senior product manager');
-    _locationsCtrl = TextEditingController(text: widget.job?.locations.join(', ') ?? 'SF Bay area, CA, USA');
+    _jobLabelCtrl = TextEditingController(text: widget.job?.jobLabel == 'My Scraper Job' ? '' : (widget.job?.jobLabel ?? ''));
+    _jobTitlesCtrl = TextEditingController(
+      text: widget.job?.jobTitles.join(', ') == 'Product Manager, AI Product Manager, Senior Product Manager' 
+          ? '' 
+          : (widget.job?.jobTitles.join(', ') ?? '')
+    );
+    _locationsCtrl = TextEditingController(
+      text: widget.job?.locations.join(', ') == 'San Francisco Bay Area, California, USA' 
+          ? '' 
+          : (widget.job?.locations.join(', ') ?? '')
+    );
     _targetUrlsCtrl = TextEditingController(text: widget.job?.targetUrls.join(', ') ?? '');
     _emailCtrl = TextEditingController(text: widget.job?.targetEmail ?? '');
+    
     if (widget.job != null) {
       _selectedFrequency = widget.job!.scrapeFrequency;
       _selectedTimeframe = widget.job!.timeframe;
       _selectedAts = List.from(widget.job!.targetAts);
     } else {
-      _selectedAts = ["Greenhouse", "Lever", "Workday"];
+      // Select all by default for a new search
+      // The available ATS list will be fetched in build, but we can set a dummy here
+      // and update it in didChangeDependencies if needed. We'll just leave it empty
+      // and populate it in build if it's a new job and _selectedAts is empty.
     }
   }
+
+  bool _initializedAts = false;
 
   @override
   void dispose() {
@@ -84,224 +99,337 @@ class _ConfigModalState extends State<ConfigModal> {
     }
   }
 
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.onSurfaceVariant,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    bool isOptional = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: AppColors.outline),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.borderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        ),
+        fillColor: Colors.white,
+        filled: true,
+      ),
+      validator: isOptional ? null : (val) => val == null || val.isEmpty ? 'Required' : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final service = context.watch<FirebaseService>();
     final availableAts = service.activeAtsPlatforms.map((p) => p.name).toList();
     
-    // Add any selected ATS platforms that might be disabled or deleted so they still show up
+    if (widget.job == null && !_initializedAts && availableAts.isNotEmpty) {
+      _selectedAts = List.from(availableAts);
+      _initializedAts = true;
+    }
+
     for (var ats in _selectedAts) {
       if (!availableAts.contains(ats)) {
         availableAts.add(ats);
       }
     }
+    
+    // Sort ATS alphabetically
+    availableAts.sort();
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset, left: 24, right: 24, top: 32),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.job == null ? 'Schedule New Job' : 'Edit Job Config',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)
-                    ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.job == null ? 'New search' : 'Edit search',
+                  style: GoogleFonts.lora(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.onSurface,
                   ),
-                  if (widget.job != null) ...[
-                    IconButton(
-                      icon: const Icon(Icons.play_circle_fill, color: AppColors.secondary),
-                      onPressed: widget.onRun,
-                      tooltip: 'Run Job Now',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
-                      onPressed: () async {
-                        await context.read<FirebaseService>().deleteJob(widget.job!.id);
-                        if (context.mounted) Navigator.pop(context);
-                      },
-                      tooltip: 'Delete Job',
-                    ),
-                  ]
-                ],
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _jobLabelCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Job Label (e.g. SF Product Managers)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
                 ),
-                validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _jobTitlesCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Target Job Titles (comma-separated)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
+                IconButton(
+                  icon: const Icon(Icons.close, color: AppColors.outline),
+                  onPressed: () => Navigator.pop(context),
+                  splashRadius: 24,
                 ),
-                validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _locationsCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Target Locations (comma-separated)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
-                ),
-                validator: (val) => val == null || val.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _targetUrlsCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Target Company ATS URLs (optional, comma-separated)',
-                  hintText: 'e.g., https://boards.greenhouse.io/figma',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Scraping Frequency',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
-                      ),
-                      initialValue: _selectedFrequency,
-                      items: _frequencyOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedFrequency = val);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Timeframe Limit',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
-                      ),
-                      initialValue: _selectedTimeframe,
-                      items: _timeframeOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedTimeframe = val);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Target Email for Reports (optional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.secondary)),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Target ATS Platforms', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.onSurface)),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        if (_selectedAts.length == availableAts.length) {
-                          _selectedAts.clear();
-                        } else {
-                          _selectedAts = List.from(availableAts);
-                        }
-                      });
-                    },
-                    child: Text(
-                      _selectedAts.length == availableAts.length ? 'Deselect All' : 'Select All',
-                      style: const TextStyle(color: AppColors.primary),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 8.0,
-                  children: availableAts.map((ats) {
-                    final isSelected = _selectedAts.contains(ats);
-                  return FilterChip(
-                    label: Text(ats),
-                    selected: isSelected,
-                    showCheckmark: false,
-                    selectedColor: AppColors.secondaryContainer,
-                    backgroundColor: AppColors.surfaceContainerHigh,
-                    labelStyle: TextStyle(
-                      color: isSelected ? AppColors.onSecondaryContainer : AppColors.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isSelected ? AppColors.secondaryContainer.withValues(alpha: 0.5) : AppColors.outlineVariant.withValues(alpha: 0.3),
-                      )
-                    ),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedAts.add(ats);
-                        } else {
-                          _selectedAts.remove(ats);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
-                      child: const Text('Cancel', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 16, fontWeight: FontWeight.w500)),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton(
-                      onPressed: _save,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: AppColors.onSecondary,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                        elevation: 1,
-                      ),
-                      child: const Text('Save Parameters', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-            ],
+              ],
+            ),
           ),
-        ),
+          const Divider(height: 1, color: AppColors.borderColor),
+          
+          // Scrollable Form Body
+          Flexible(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: bottomInset + 24, left: 24, right: 24, top: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLabel('SEARCH NAME'),
+                    _buildTextField(
+                      controller: _jobLabelCtrl,
+                      hint: 'e.g. SF Product Managers',
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    _buildLabel('JOB TITLES'),
+                    _buildTextField(
+                      controller: _jobTitlesCtrl,
+                      hint: 'Product manager, Senior product manager',
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    _buildLabel('LOCATIONS'),
+                    _buildTextField(
+                      controller: _locationsCtrl,
+                      hint: 'SF Bay area, CA, USA',
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('RUNS'),
+                              DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.borderColor),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.borderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                  ),
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                ),
+                                icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
+                                value: _selectedFrequency,
+                                items: _frequencyOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedFrequency = val);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('LOOKS BACK'),
+                              DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.borderColor),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.borderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                                  ),
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                ),
+                                icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
+                                value: _selectedTimeframe,
+                                items: _timeframeOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedTimeframe = val);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Row(
+                      children: [
+                        const Icon(Icons.mail_outline, size: 16, color: AppColors.onSurfaceVariant),
+                        const SizedBox(width: 6),
+                        _buildLabel('EMAIL RESULTS TO (OPTIONAL)'),
+                      ],
+                    ),
+                    _buildTextField(
+                      controller: _emailCtrl,
+                      hint: 'you@email.com',
+                      isOptional: true,
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildLabel('PLATFORMS TO SEARCH'),
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedAts = List.from(availableAts);
+                                });
+                              },
+                              child: const Text('Select all', style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600)),
+                            ),
+                            const SizedBox(width: 16),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedAts.clear();
+                                });
+                              },
+                              child: const Text('Clear', style: TextStyle(color: AppColors.outline, fontSize: 13, fontWeight: FontWeight.w600)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    Wrap(
+                      spacing: 12.0,
+                      runSpacing: 12.0,
+                      children: availableAts.map((ats) {
+                        final isSelected = _selectedAts.contains(ats);
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              if (isSelected) {
+                                _selectedAts.remove(ats);
+                              } else {
+                                _selectedAts.add(ats);
+                              }
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected ? AppColors.primary : AppColors.borderColor,
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              ats,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isSelected ? AppColors.primary : AppColors.onSurface,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 48),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Footer Buttons
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: AppColors.borderColor, width: 1)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppColors.borderColor),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      foregroundColor: AppColors.onSurface,
+                    ),
+                    child: const Text('Cancel', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF9EBBB5), // Custom light green as in screenshot
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Save search', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
