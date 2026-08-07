@@ -1,9 +1,7 @@
 import os
 import json
-from typing import List, Optional, Dict, Any
+from typing import List, Any
 from jobspy import scrape_jobs
-from datetime import datetime
-from pydantic import BaseModel
 
 class CustomCrawlerResponse:
     def __init__(self, success: bool, data: Any = None, error: str = None):

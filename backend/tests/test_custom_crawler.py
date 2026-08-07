@@ -1,4 +1,3 @@
-import pytest
 from services.custom_crawler import CustomScraperClient
 
 def test_custom_scraper_client_initialization():

@@ -1,10 +1,7 @@
-import time
-import concurrent.futures
 from typing import List, Dict, Any
 from firebase_admin import firestore
-from services.custom_crawler import CustomScraperClient
 from services.dork_crawler import DorkCrawler
-from config.settings import ats_domains, max_retries
+from config.settings import ats_domains
 
 def _generate_job_hash(company: str, title: str) -> str:
     """Generate a deterministic hash key for deduplication based on company and title."""

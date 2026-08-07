@@ -7,7 +7,6 @@ import 'package:scrappy_job/models/job_config.dart';
 import 'package:scrappy_job/models/ats_platform.dart';
 import 'package:scrappy_job/models/job_view_item.dart';
 import 'package:scrappy_job/views/tabs/dashboard_tab.dart';
-import 'package:scrappy_job/views/tabs/jobs_tab.dart';
 import 'package:scrappy_job/views/tabs/config_tab.dart';
 import 'package:scrappy_job/views/tabs/settings_tab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -79,19 +78,10 @@ class FakeFirebaseService extends ChangeNotifier implements FirebaseService {
   Future<void> saveUserSettings(Map<String, dynamic> settings) async {}
 
   @override
-  Future<void> addJob(JobConfig job) async {}
-
-  @override
-  Future<void> updateJob(JobConfig job) async {}
-
-  @override
   Future<void> saveJob(JobConfig job) async {}
 
   @override
   Future<void> deleteJob(String jobId) async {}
-
-  @override
-  Future<void> toggleJobStatus(String jobId, bool currentStatus) async {}
 
   @override
   void setActiveJobId(String? jobId) {}
@@ -109,15 +99,7 @@ class FakeFirebaseService extends ChangeNotifier implements FirebaseService {
   Future<void> toggleJobApplied(String runId, List<ScrapedJob> currentJobs, int jobIndex, bool isApplied) async {}
   
   @override
-  Future<void> runJobNow(String jobId) async {}
-  
-  @override
   Future<void> stopAgentRun(String jobId) async {}
-  
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 void main() {

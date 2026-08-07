@@ -1,5 +1,3 @@
-import os
-
 ats_domains = {
     "Greenhouse": "boards.greenhouse.io",
     "Ashby": "jobs.ashbyhq.com",
