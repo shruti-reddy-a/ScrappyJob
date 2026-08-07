@@ -9,7 +9,8 @@ import '../pages/active_platforms_view.dart';
 import '../../models/job_config.dart';
 
 class DashboardTab extends StatefulWidget {
-  const DashboardTab({super.key});
+  final VoidCallback onNavigateToSearches;
+  const DashboardTab({super.key, required this.onNavigateToSearches});
 
   @override
   State<DashboardTab> createState() => _DashboardTabState();
@@ -235,9 +236,7 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
                         ),
                       ),
                       InkWell(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const ExecutionHistoryView()));
-                        },
+                        onTap: widget.onNavigateToSearches,
                         child: const Text(
                           'View all',
                           style: TextStyle(
@@ -266,7 +265,7 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
                     separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.borderColor),
                     itemBuilder: (context, index) {
                       final run = service.jobRuns[index];
-                      return _buildRecentActivityItem(run);
+                      return _buildRecentActivityItem(run, service);
                     },
                   ),
               ],
@@ -324,16 +323,26 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildRecentActivityItem(JobRun run) {
+  Widget _buildRecentActivityItem(JobRun run, FirebaseService service) {
     // Format timestamp
     String formattedTime = 'Unknown time';
-    if (run.timestamp != null) {
-      final dt = run.timestamp!.toDate();
+    if (run.createdAt != null) {
+      final dt = run.createdAt!;
       final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
       final ampm = dt.hour >= 12 ? 'PM' : 'AM';
       final min = dt.minute.toString().padLeft(2, '0');
       formattedTime = '${months[dt.month - 1]} ${dt.day}, ${dt.year} · $hour:$min $ampm';
+    }
+
+    String title = 'Completed Search';
+    try {
+      final config = service.jobs.firstWhere((j) => j.id == run.configId);
+      title = config.jobLabel;
+    } catch (e) {
+      if (run.jobTitles.isNotEmpty) {
+        title = run.jobTitles.join(', ');
+      }
     }
 
     return Padding(
@@ -362,7 +371,7 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  run.configName,
+                  title,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

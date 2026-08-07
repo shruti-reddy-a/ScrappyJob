@@ -70,7 +70,7 @@ class _DashboardViewState extends State<DashboardView> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          const DashboardTab(),
+          DashboardTab(onNavigateToSearches: () => setState(() => _currentIndex = 2)),
           const JobsTab(),
           ConfigTab(onRunStarted: () => setState(() => _currentIndex = 1)),
           const SettingsTab(),
