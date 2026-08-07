@@ -225,7 +225,9 @@ class _SearchableDropdownState extends State<SearchableDropdown> {
                                                 )
                                               : Radio<String>(
                                                   value: option,
+                                                  // ignore: deprecated_member_use
                                                   groupValue: _tempSelected.isNotEmpty ? _tempSelected.first : null,
+                                                  // ignore: deprecated_member_use
                                                   onChanged: (val) {
                                                     if (val != null) {
                                                       setOverlayState(() {

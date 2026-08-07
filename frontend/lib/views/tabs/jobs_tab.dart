@@ -61,8 +61,8 @@ class _JobsTabState extends State<JobsTab> {
     
     if (maxSal == 0) return null;
     
-    if (isHourly && maxSal < 1000) maxSal *= 2000;
-    else if (maxSal < 1000) maxSal *= 2000; // Assume hourly if < 1000
+    if (isHourly && maxSal < 1000) { maxSal *= 2000; }
+    else if (maxSal < 1000) { maxSal *= 2000; } // Assume hourly if < 1000
     
     if (salaryStr.toLowerCase().contains('month') || salaryStr.toLowerCase().contains('mo')) {
       if (maxSal < 20000) maxSal *= 12;
@@ -152,12 +152,12 @@ class _JobsTabState extends State<JobsTab> {
       if (_selectedTimes.isNotEmpty) {
         final selectedTime = _selectedTimes.first;
         Duration? maxDuration;
-        if (selectedTime == 'Last 3 hours') maxDuration = const Duration(hours: 3);
-        else if (selectedTime == 'Last 6 hours') maxDuration = const Duration(hours: 6);
-        else if (selectedTime == 'Last 12 hours') maxDuration = const Duration(hours: 12);
-        else if (selectedTime == 'Past 24 hours') maxDuration = const Duration(hours: 24);
-        else if (selectedTime == 'Past week') maxDuration = const Duration(days: 7);
-        else if (selectedTime == 'Past month') maxDuration = const Duration(days: 30);
+        if (selectedTime == 'Last 3 hours') { maxDuration = const Duration(hours: 3); }
+        else if (selectedTime == 'Last 6 hours') { maxDuration = const Duration(hours: 6); }
+        else if (selectedTime == 'Last 12 hours') { maxDuration = const Duration(hours: 12); }
+        else if (selectedTime == 'Past 24 hours') { maxDuration = const Duration(hours: 24); }
+        else if (selectedTime == 'Past week') { maxDuration = const Duration(days: 7); }
+        else if (selectedTime == 'Past month') { maxDuration = const Duration(days: 30); }
         
         if (maxDuration != null) {
           Duration? jobDuration = _parsePostedDate(item.job.postedDate);
@@ -465,14 +465,14 @@ class _JobsTabState extends State<JobsTab> {
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
                       onTap: () => _launchUrl(item.job.applicationLink),
-                      child: Row(
+                      child: const Row(
                         children: [
-                          const Text(
+                          Text(
                             'Apply',
                             style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 14),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.open_in_new, size: 14, color: AppColors.primary),
+                          SizedBox(width: 4),
+                          Icon(Icons.open_in_new, size: 14, color: AppColors.primary),
                         ],
                       ),
                     ),
@@ -500,12 +500,12 @@ class _JobsTabState extends State<JobsTab> {
             color: const Color(0xFFE8F6F4),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check, size: 16, color: Color(0xFF165C53)),
-              const SizedBox(width: 4),
-              const Text(
+              Icon(Icons.check, size: 16, color: Color(0xFF165C53)),
+              SizedBox(width: 4),
+              Text(
                 'Applied',
                 style: TextStyle(color: Color(0xFF165C53), fontWeight: FontWeight.w600, fontSize: 13),
               ),

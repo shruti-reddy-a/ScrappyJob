@@ -306,9 +306,9 @@ class _SearchJobCardState extends State<SearchJobCard> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Divider(height: 1, color: AppColors.borderColor),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                    child: const Text(
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(24, 20, 24, 8),
+                    child: Text(
                       'RUN HISTORY',
                       style: TextStyle(
                         fontSize: 12,
@@ -347,7 +347,7 @@ class _SearchJobCardState extends State<SearchJobCard> {
                         foundStr: '${r.totalFound.toString().padLeft(2, ' ')} found',
                         timeStr: r.executionTimeMs > 0 ? '${(r.executionTimeMs / 1000).toStringAsFixed(1)}s' : '—',
                       );
-                    }).toList(),
+                    }),
                   const SizedBox(height: 16),
                 ],
               ),

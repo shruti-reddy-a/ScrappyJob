@@ -28,7 +28,6 @@ class _SettingsTabState extends State<SettingsTab> {
 
   Future<void> _saveSettings() async {
     setState(() => _isSaving = true);
-    final firebaseService = context.read<FirebaseService>();
     // No settings to save right now
     setState(() => _isSaving = false);
     if (mounted) {

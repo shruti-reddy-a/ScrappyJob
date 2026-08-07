@@ -256,7 +256,7 @@ class _ConfigModalState extends State<ConfigModal> {
                                   filled: true,
                                 ),
                                 icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
-                                value: _selectedFrequency,
+                                initialValue: _selectedFrequency,
                                 items: _frequencyOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
                                 onChanged: (val) {
                                   if (val != null) setState(() => _selectedFrequency = val);
@@ -290,7 +290,7 @@ class _ConfigModalState extends State<ConfigModal> {
                                   filled: true,
                                 ),
                                 icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.outline),
-                                value: _selectedTimeframe,
+                                initialValue: _selectedTimeframe,
                                 items: _timeframeOptions.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
                                 onChanged: (val) {
                                   if (val != null) setState(() => _selectedTimeframe = val);

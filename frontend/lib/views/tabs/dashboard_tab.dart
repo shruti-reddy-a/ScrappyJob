@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/firebase_service.dart';
 import '../../constants/app_colors.dart';
-import '../pages/active_configurations_view.dart';
 import '../pages/execution_history_view.dart';
-import '../pages/active_platforms_view.dart';
 import '../../models/job_config.dart';
 import '../widgets/config_modal.dart';
 
@@ -55,7 +53,9 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
     if (isCrawlerRunning) {
       try {
         activeConfigName = service.jobs.firstWhere((j) => j.id == service.activeProgress!.id).jobLabel;
-      } catch (e) {}
+      } catch (e) {
+        // Ignored if config is missing
+      }
     }
 
     return SingleChildScrollView(

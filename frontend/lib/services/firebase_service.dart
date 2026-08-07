@@ -158,7 +158,7 @@ class FirebaseService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Error fetching user settings: $e');
+      debugPrint('Error fetching user settings: $e');
     }
   }
 
@@ -169,7 +169,7 @@ class FirebaseService extends ChangeNotifier {
       _userSettings.addAll(settings);
       notifyListeners();
     } catch (e) {
-      print('Error saving user settings: $e');
+      debugPrint('Error saving user settings: $e');
     }
   }
 
