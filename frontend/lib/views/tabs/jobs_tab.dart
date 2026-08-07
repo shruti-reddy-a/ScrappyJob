@@ -379,10 +379,10 @@ class _JobsTabState extends State<JobsTab> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
-          _headerCell('ROLE', flex: 3),
+          _headerCell('ROLE', flex: 4),
           _headerCell('COMPANY', flex: 2),
           _headerCell('LOCATION', flex: 2),
-          _headerCell('SOURCE', flex: 2),
+          _headerCell('SOURCE', flex: 1),
           _headerCell('SALARY', flex: 2),
           _headerCell('POSTED', flex: 1),
           _headerCell('APPLY', flex: 2, align: TextAlign.right),
@@ -414,7 +414,7 @@ class _JobsTabState extends State<JobsTab> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               item.job.jobTitle,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.onSurface),
@@ -435,7 +435,7 @@ class _JobsTabState extends State<JobsTab> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
               item.job.sourceAts,
               style: const TextStyle(fontSize: 14, color: AppColors.onSurfaceVariant),

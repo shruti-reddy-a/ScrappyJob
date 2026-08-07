@@ -105,10 +105,12 @@ class CustomScraperClient:
                     salary_str = "N/A"
                     
                     if min_amt and not (isinstance(min_amt, float) and __import__("math").isnan(min_amt)):
+                        min_amt_int = int(float(min_amt))
                         if max_amt and not (isinstance(max_amt, float) and __import__("math").isnan(max_amt)):
-                            salary_str = f"{currency}{min_amt} - {currency}{max_amt} / {interval}".strip()
+                            max_amt_int = int(float(max_amt))
+                            salary_str = f"{currency}{min_amt_int} - {currency}{max_amt_int} / {interval}".strip()
                         else:
-                            salary_str = f"{currency}{min_amt} / {interval}".strip()
+                            salary_str = f"{currency}{min_amt_int} / {interval}".strip()
                     
                     all_jobs.append({
                         "job_title": str(row.get("title", "N/A")),
