@@ -183,9 +183,10 @@ class _JobsTabState extends State<JobsTab> {
           Text(
             'Jobs',
             style: GoogleFonts.lora(
-              fontSize: 32,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: AppColors.onSurface,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 8),
@@ -210,17 +211,17 @@ class _JobsTabState extends State<JobsTab> {
                     hintStyle: const TextStyle(color: AppColors.textSecondary),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: const Color(0xFFF9FAFA),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: AppColors.borderColor),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: AppColors.borderColor),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       borderSide: const BorderSide(color: AppColors.primary),
                     ),
                   ),
@@ -285,11 +286,11 @@ class _JobsTabState extends State<JobsTab> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.borderColor),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 child: Column(
                   children: [
                     _buildTableHeader(),
@@ -496,17 +497,17 @@ class _JobsTabState extends State<JobsTab> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.successBackground,
+            color: const Color(0xFFE8F6F4),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check, size: 16, color: AppColors.success),
+              const Icon(Icons.check, size: 16, color: Color(0xFF165C53)),
               const SizedBox(width: 4),
               const Text(
                 'Applied',
-                style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600, fontSize: 13),
+                style: TextStyle(color: Color(0xFF165C53), fontWeight: FontWeight.w600, fontSize: 13),
               ),
             ],
           ),

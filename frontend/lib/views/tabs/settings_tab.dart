@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/firebase_service.dart';
 import '../../constants/app_colors.dart';
 
@@ -49,27 +50,33 @@ class _SettingsTabState extends State<SettingsTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Settings', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
-              FilledButton.icon(
+              Text('Settings', style: GoogleFonts.lora(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.onSurface, letterSpacing: -0.5)),
+              ElevatedButton.icon(
                 onPressed: _isSaving ? null : _saveSettings,
                 icon: _isSaving 
                   ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.save),
-                label: const Text('Save Settings'),
+                  : const Icon(Icons.save, size: 18),
+                label: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF165C53),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 24),
           
-          Card(
-            elevation: 0,
-            color: AppColors.surfaceContainerLowest,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderColor),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
