@@ -15,9 +15,20 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   int _currentIndex = 0;
+  
+  @override
+  void didUpdateWidget(covariant DashboardView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_currentIndex >= 4) {
+      _currentIndex = 3;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_currentIndex >= 4) {
+      _currentIndex = 3;
+    }
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
