@@ -7,6 +7,7 @@ import '../pages/active_configurations_view.dart';
 import '../pages/execution_history_view.dart';
 import '../pages/active_platforms_view.dart';
 import '../../models/job_config.dart';
+import '../widgets/config_modal.dart';
 
 class DashboardTab extends StatefulWidget {
   final VoidCallback onNavigateToSearches;
@@ -88,8 +89,12 @@ class _DashboardTabState extends State<DashboardTab> with SingleTickerProviderSt
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  // E.g. navigate to config creation
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ActiveConfigurationsView()));
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (ctx) => const ConfigModal(),
+                  );
                 },
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('New search', style: TextStyle(fontWeight: FontWeight.w600)),
