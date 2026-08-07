@@ -86,7 +86,7 @@ def scrape_jobs(
     prompt = f"Find recently posted jobs matching titles: {title_str} in locations: {loc_str}. Search specifically for: {' OR '.join(job_titles)}"
     
     try:
-        response = crawler_client.extract(urls=target_domains, prompt=prompt, schema=schema)
+        response = crawler_client.extract(urls=target_domains, prompt=prompt, schema=schema, job_titles=job_titles)
         if response and response.success:
             extracted_data = response.data.get("jobs", []) if isinstance(response.data, dict) else []
             for job in extracted_data:

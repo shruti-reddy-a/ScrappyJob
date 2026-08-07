@@ -15,7 +15,7 @@ class CustomScraperClient:
     def __init__(self, gemini_api_key: str = None):
         self.api_key = gemini_api_key or os.getenv("GEMINI_API_KEY")
 
-    def extract(self, urls: List[str], prompt: str, schema: dict, enable_web_search: bool = False) -> CustomCrawlerResponse:
+    def extract(self, urls: List[str], prompt: str, schema: dict, enable_web_search: bool = False, job_titles: List[str] = None) -> CustomCrawlerResponse:
         """
         Since we are using JobSpy to comprehensively search startups, `urls` will be a list of target ATS domains 
         (e.g. `['greenhouse.io', 'lever.co']`).
@@ -29,8 +29,13 @@ class CustomScraperClient:
         
         # A simple parsing mechanism:
         search_term = "Product Manager"
-        if "Search specifically for:" in prompt:
+        if job_titles and len(job_titles) > 0:
+            search_term = " OR ".join(job_titles)
+        elif "Search specifically for:" in prompt:
             search_term = prompt.split("Search specifically for:")[-1].strip()
+            
+        if not search_term:
+            search_term = "Software Engineer" # Fallback so jobspy doesn't pull random jobs
         
         location = "San Francisco, CA"
         if "locations:" in prompt and "Search specifically for:" in prompt:
@@ -53,7 +58,27 @@ class CustomScraperClient:
             print(f"JobSpy found {len(jobs_df)} jobs before filtering.")
             
             if len(jobs_df) > 0:
+                import re
                 for index, row in jobs_df.iterrows():
+                    row_title = str(row.get("title", "")).lower()
+                    
+                    # Strict title filtering to ensure relevance
+                    if job_titles and len(job_titles) > 0:
+                        is_relevant = False
+                        for jt in job_titles:
+                            jt_lower = jt.lower()
+                            if len(jt_lower) <= 3:
+                                # Use word boundary for acronyms like "PM", "AI", "iOS"
+                                if re.search(r'\b' + re.escape(jt_lower) + r'\b', row_title):
+                                    is_relevant = True
+                                    break
+                            else:
+                                if jt_lower in row_title:
+                                    is_relevant = True
+                                    break
+                        if not is_relevant:
+                            continue # Skip unrelated job
+                            
                     job_url_direct = str(row.get("job_url_direct", ""))
                     job_url = str(row.get("job_url", ""))
                     
