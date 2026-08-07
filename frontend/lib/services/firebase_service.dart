@@ -96,6 +96,9 @@ class FirebaseService extends ChangeNotifier {
 
   Future<String?> signInWithEmail(String email, String password) async {
     try {
+      if (kIsWeb) {
+        await _auth.setPersistence(Persistence.SESSION);
+      }
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return null;
     } on FirebaseAuthException catch (e) {
@@ -107,6 +110,9 @@ class FirebaseService extends ChangeNotifier {
 
   Future<String?> registerWithEmail(String email, String password) async {
     try {
+      if (kIsWeb) {
+        await _auth.setPersistence(Persistence.SESSION);
+      }
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return null;
     } on FirebaseAuthException catch (e) {
@@ -119,8 +125,9 @@ class FirebaseService extends ChangeNotifier {
   Future<String?> signInWithGoogle() async {
     try {
       if (kIsWeb) {
+        await _auth.setPersistence(Persistence.SESSION);
         GoogleAuthProvider authProvider = GoogleAuthProvider();
-        await _auth.signInWithRedirect(authProvider);
+        await _auth.signInWithPopup(authProvider);
       } else {
         final googleUser = await GoogleSignIn.instance.authenticate();
 
