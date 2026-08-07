@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/firebase_service.dart';
 import '../../constants/app_colors.dart';
 import '../../models/job_view_item.dart';
+import '../../widgets/searchable_dropdown.dart';
 
 enum JobFilter { all, notApplied, applied }
 
@@ -185,34 +186,11 @@ class _JobsTabState extends State<JobsTab> {
   }
 
   Widget _buildDropdownFilter(String hint, List<String> options, String? selectedValue, ValueChanged<String?> onChanged) {
-    return DropdownMenu<String>(
-      hintText: hint,
-      initialSelection: selectedValue,
-      onSelected: onChanged,
-      enableSearch: true,
-      enableFilter: true,
-      width: 180,
-      menuHeight: 300,
-      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.onSurface),
-      inputDecorationTheme: InputDecorationTheme(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        constraints: const BoxConstraints(maxHeight: 40),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AppColors.borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AppColors.borderColor),
-        ),
-      ),
-      dropdownMenuEntries: [
-        DropdownMenuEntry<String>(value: hint, label: hint), // 'Any X' resets the filter
-        ...options.map((e) => DropdownMenuEntry<String>(value: e, label: e)),
-      ],
+    return SearchableDropdown(
+      hint: hint,
+      options: options,
+      selectedValue: selectedValue,
+      onChanged: onChanged,
     );
   }
 
