@@ -132,7 +132,7 @@ def main_loop():
     print("ScrappyJob Agent is starting... Listening for scheduled jobs.")
     while True:
         try:
-            active_jobs = db.collection("jobs").where("is_active", "==", True).get()
+            active_jobs = db.collection("jobs").where(filter=firestore.FieldFilter("is_active", "==", True)).get()
             current_time = datetime.now()
             
             for job_doc in active_jobs:
@@ -151,4 +151,17 @@ def main_loop():
         time.sleep(60)
 
 if __name__ == "__main__":
-    main_loop()
+    import sys
+    if "--single-run" in sys.argv:
+        print("ScrappyJob Agent is running in single-run mode.")
+        active_jobs = db.collection("jobs").where(filter=firestore.FieldFilter("is_active", "==", True)).get()
+        current_time = datetime.now()
+        for job_doc in active_jobs:
+            config = job_doc.to_dict()
+            job_id = job_doc.id
+            freq = config.get("scrape_frequency", "Every 4 Hours")
+            if should_run_job(db, job_id, freq, current_time):
+                logger = JobLogger()
+                run_job(job_id, config, logger)
+    else:
+        main_loop()
